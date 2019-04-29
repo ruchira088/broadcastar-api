@@ -1,0 +1,14 @@
+FROM openjdk:8-jdk
+
+RUN apt-get update && \
+    apt-get install apt-transport-https bc ca-certificates software-properties-common -y
+
+WORKDIR /opt/broadcastar-api
+
+COPY ./broadcastar-api .
+
+EXPOSE 9000
+
+ENTRYPOINT ["bash"]
+
+CMD ["/opt/broadcastar-api/bin/broadcastar-api"]
