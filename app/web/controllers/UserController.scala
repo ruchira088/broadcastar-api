@@ -5,6 +5,7 @@ import play.api.libs.json.JsValue
 import play.api.mvc.{AbstractController, Action, ControllerComponents}
 import services.user.UserService
 import web.requests.{CreateUserRequest, RequestParser}
+import web.requests.CreateUserRequest.createUserRequestValidator
 import web.responses.ResponseCreator
 
 import scala.concurrent.{ExecutionContext, Future}

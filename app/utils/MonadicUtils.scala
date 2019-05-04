@@ -3,6 +3,7 @@ package utils
 import scalaz.{Monad, MonadError, OptionT}
 
 import scala.language.higherKinds
+import scala.reflect.ClassTag
 import scala.util.{Failure, Try}
 
 object MonadicUtils {
@@ -47,11 +48,11 @@ object MonadicUtils {
         }
     }
 
-  implicit val tryMonadError: MonadError[Try, Throwable] = new MonadError[Try, Throwable] {
-    override def raiseError[A](throwable: Throwable): Try[A] = Failure(throwable)
+  implicit def tryMonadError[Error <: Throwable: ClassTag]: MonadError[Try, Error] = new MonadError[Try, Error] {
+    override def raiseError[A](error: Error): Try[A] = Failure(error)
 
-    override def handleError[A](fa: Try[A])(f: Throwable => Try[A]): Try[A] =
-      fa.recoverWith { case throwable => f(throwable) }
+    override def handleError[A](fa: Try[A])(f: Error => Try[A]): Try[A] =
+      fa.recoverWith { case error: Error => f(error) }
 
     override def point[A](a: => A): Try[A] = Try(a)
 

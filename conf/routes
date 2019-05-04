@@ -1,1 +1,3 @@
 GET     /health                     web.controllers.HomeController.healthCheck()
+
+POST    /user                       web.controllers.UserController.createUser()

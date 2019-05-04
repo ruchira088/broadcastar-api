@@ -1,9 +1,10 @@
 package web.responses
 
-import exceptions.{ExistingEmailException, ExistingUsernameException}
+import exceptions.{AggregatedValidationException, ExistingEmailException, ExistingUsernameException}
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc.{Result, Results}
 import play.api.mvc.Results._
+import web.responses.models.ExceptionResponse
 import web.responses.models.ExceptionResponse.errorResponse
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -20,6 +21,9 @@ object ResponseCreator {
     case existingUsernameException: ExistingUsernameException => Conflict(errorResponse(existingUsernameException))
 
     case existingEmailException: ExistingEmailException => Conflict(errorResponse(existingEmailException))
+
+    case AggregatedValidationException(validationExceptions) =>
+      BadRequest { Json.toJsObject(ExceptionResponse(validationExceptions)) }
 
     case throwable => InternalServerError(errorResponse(throwable))
   }

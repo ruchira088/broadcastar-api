@@ -1,3 +1,6 @@
+logs
+target
+/.sqlite/broadcastar.db
 /.idea
 /.idea_modules
 /.classpath
@@ -5,5 +8,3 @@
 /.settings
 /RUNNING_PID
 .DS_Store
-
-/project/project

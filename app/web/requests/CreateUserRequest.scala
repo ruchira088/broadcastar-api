@@ -1,10 +1,10 @@
 package web.requests
 
-import play.api.libs.json.{Json, OFormat}
-import Validator.{combine, validate => validator}
 import org.apache.commons.validator.routines.EmailValidator
+import play.api.libs.json.{Json, OFormat}
+import web.requests.Validator.{combine, validate => validator}
 
-import scala.util.{Success, Try}
+import scala.util.Try
 
 case class CreateUserRequest(
   username: String,

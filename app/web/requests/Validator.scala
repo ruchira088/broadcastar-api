@@ -1,6 +1,6 @@
 package web.requests
 
-import exceptions.{AggregatedException, ValidationException}
+import exceptions.{AggregatedValidationException, ValidationException}
 import utils.MonadicUtils.{predicate, sequence, tryMonadError}
 
 import scala.util.{Failure, Success, Try}
@@ -18,10 +18,10 @@ object Validator {
     value => predicate[Try, Throwable](condition(value), ValidationException(validationErrorMessage))
 
   def combine[A](value: A)(validations: (A => Try[Unit])*): Try[A] =
-    sequence(validations.map(_(value)): _*)
+    sequence[Try, Unit, ValidationException](validations.map(_(value)): _*)
       .flatMap {
         _.fold[Try[A]](
-          validationErrors => Failure(AggregatedException(validationErrors)),
+          validationErrors => Failure(AggregatedValidationException(validationErrors)),
           _ => Success(value)
         )
       }
