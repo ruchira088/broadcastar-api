@@ -8,8 +8,16 @@ object Dependencies {
   lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.2.27"
   
   lazy val playSlick = "com.typesafe.play" %% "play-slick" % "4.0.1"
+
+  lazy val postgresql = "org.postgresql" % "postgresql" % "42.2.5"
+
+  lazy val sqlite = "org.xerial" % "sqlite-jdbc" % "3.27.2.1"
+
+  lazy val h2 = "com.h2database" % "h2" % "1.4.199"
   
   lazy val jbcrypt = "org.mindrot" % "jbcrypt" % "0.4"
+  
+  lazy val commonsValidator = "commons-validator" % "commons-validator" % "1.6"
 
   lazy val scalaTestPlusPlay = "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.2"
   
