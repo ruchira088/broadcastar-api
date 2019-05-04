@@ -5,11 +5,13 @@ import java.util.UUID
 import config.SystemUtilities
 import dao.user.DatabaseUserDao
 import dao.user.models.DatabaseUser
-import exceptions.{ExistingEmailException, ExistingUsernameException}
+import exceptions.aggregation.AggregatedExistingResourceException
+import exceptions.{ExistingEmailException, ExistingResourceException, ExistingUsernameException}
 import javax.inject.{Inject, Singleton}
 import scalaz.std.scalaFuture.futureInstance
 import services.crypto.CryptographyService
 import services.user.models.User
+import utils.MonadicUtils
 import utils.MonadicUtils.OptionTWrapper
 import web.requests.CreateUserRequest
 
@@ -22,12 +24,21 @@ class UserServiceImpl @Inject()(databaseUserDao: DatabaseUserDao, cryptographySe
     createUserRequest: CreateUserRequest
   )(implicit executionContext: ExecutionContext): Future[User] =
     for {
-      _ <- Future.sequence {
-        List(
-          databaseUserDao.getByEmail(createUserRequest.email) ifNotEmpty ExistingEmailException(createUserRequest.email),
-          databaseUserDao.getByUsername(createUserRequest.username) ifNotEmpty ExistingUsernameException(createUserRequest.username)
-        )
-      }
+      exists <- MonadicUtils.sequence(
+        databaseUserDao.getByEmail(createUserRequest.email) ifNotEmpty ExistingEmailException(createUserRequest.email),
+        databaseUserDao.getByUsername(createUserRequest.username) ifNotEmpty ExistingUsernameException(createUserRequest.username)
+      )
+
+      _ <- exists.fold(
+        errors =>
+          Future.failed {
+            AggregatedExistingResourceException {
+              errors.collect { case existingResourceException: ExistingResourceException => existingResourceException }
+            }
+          },
+        _ => Future.successful((): Unit)
+      )
+
 
       saltedHashedPassword <- cryptographyService.hashPassword(createUserRequest.password)
 

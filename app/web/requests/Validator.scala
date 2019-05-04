@@ -1,6 +1,7 @@
 package web.requests
 
-import exceptions.{AggregatedValidationException, ValidationException}
+import exceptions.ValidationException
+import exceptions.aggregation.AggregatedValidationException
 import utils.MonadicUtils.{predicate, sequence, tryMonadError}
 
 import scala.util.{Failure, Success, Try}
