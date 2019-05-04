@@ -2,11 +2,12 @@ package web.controllers
 
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.JsValue
-import play.api.mvc.{AbstractController, Action, ControllerComponents}
+import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 import services.user.UserService
 import web.requests.{CreateUserRequest, RequestParser}
 import web.requests.CreateUserRequest.createUserRequestValidator
 import web.responses.ResponseCreator
+import web.responses.models.UsernameResponse
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -22,5 +23,14 @@ class UserController @Inject()(userService: UserService, controllerComponents: C
             user <- userService.createUser(createUserRequest)
           } yield user
         }
+    }
+
+  def usernameExists(username: String): Action[AnyContent] =
+    Action.async {
+      ResponseCreator.create(Ok) {
+        for {
+          exists <- userService.usernameExists(username)
+        } yield UsernameResponse(username, exists)
+      }
     }
 }

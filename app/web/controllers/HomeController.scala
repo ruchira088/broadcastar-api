@@ -12,10 +12,6 @@ class HomeController @Inject()(controllerComponents: ControllerComponents)(impli
 
   def healthCheck(): Action[AnyContent] =
     Action {
-      Ok {
-        Json.toJson {
-          HealthCheck()
-        }
-      }
+      Ok { Json.toJson { HealthCheck() } }
     }
 }

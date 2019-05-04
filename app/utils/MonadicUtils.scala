@@ -1,6 +1,6 @@
 package utils
 
-import scalaz.{Monad, MonadError, OptionT}
+import scalaz.{Functor, Monad, MonadError, OptionT}
 
 import scala.language.higherKinds
 import scala.reflect.ClassTag
@@ -19,6 +19,8 @@ object MonadicUtils {
           monadError.raiseError(throwable)
         }
       }
+
+    def nonEmpty(implicit functor: Functor[M]): M[Boolean] = functor.map(optionT.isEmpty)(empty => !empty)
   }
 
   def predicate[M[_], A](condition: Boolean, failure: => A)(implicit monadError: MonadError[M, A]): M[Unit] =

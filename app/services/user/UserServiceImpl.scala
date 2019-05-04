@@ -46,6 +46,9 @@ class UserServiceImpl @Inject()(databaseUserDao: DatabaseUserDao, cryptographySe
 
     } yield DatabaseUser.toUser(persistedUser)
 
+  override def usernameExists(username: String)(implicit executionContext: ExecutionContext): Future[Boolean] =
+    databaseUserDao.getByUsername(username).nonEmpty
+
   override def verifyEmail(userId: UUID, secret: String)(implicit executionContext: ExecutionContext): Future[User] =
     ???
 }
