@@ -10,6 +10,7 @@ case class CreateUserRequest(
   username: String,
   firstName: String,
   lastName: Option[String],
+  profileImageId: Option[String],
   password: String,
   email: String
 )

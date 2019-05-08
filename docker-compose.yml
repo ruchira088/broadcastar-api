@@ -4,6 +4,7 @@ services:
   broadcastar-api:
     build: .
     tty: true
+    command: "runWithPostgresql"
     ports:
       - 9000:9000
       - 5005:5005
@@ -14,3 +15,17 @@ services:
       - "/opt/broadcastar-api/target"
       - "/opt/broadcastar-api/project/target"
       - "/root/.sbt/1.0/plugins"
+    environment:
+      POSTGRESQL_URL: "jdbc:postgresql://postgresql-database:5432/broadcastar-api"
+      POSTGRESQL_USER: "my-user"
+      POSTGRESQL_PASSWORD: "password"
+
+  postgresql-database:
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: "broadcastar-api"
+      POSTGRES_USER: "my-user"
+      POSTGRES_PASSWORD: "password"
+

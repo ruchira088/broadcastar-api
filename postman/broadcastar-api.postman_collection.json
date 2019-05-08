@@ -1,0 +1,140 @@
+{
+	"info": {
+		"_postman_id": "70377753-84c5-44b1-a6bf-96c414a92d93",
+		"name": "broadcastar-api",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "localhost:9000/health",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"health"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Upload resource",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "profile-picture",
+							"type": "file",
+							"src": ""
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:9000/resource",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"resource"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Fetch resource",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "localhost:9000/resource/:key",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"resource",
+						":key"
+					],
+					"variable": [
+						{
+							"key": "key",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create user",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"username\": \"user\",\n\t\"firstName\": \"John\",\n\t\"lastName\": \"Smith\",\n\t\"password\": \"password123\",\n\t\"email\": \"ruchira@gmail.com\"\n}"
+				},
+				"url": {
+					"raw": "localhost:9000/user",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Check if username exists",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "localhost:9000/username/user",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"username",
+						"user"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

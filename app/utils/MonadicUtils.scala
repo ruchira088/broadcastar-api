@@ -60,4 +60,6 @@ object MonadicUtils {
 
     override def bind[A, B](fa: Try[A])(f: A => Try[B]): Try[B] = fa.flatMap(f)
   }
+
+  def withDefault[M[_]: Monad, A](default: => M[A])(value: OptionT[M, A]): M[A] = value.ifEmpty(default)
 }

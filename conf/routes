@@ -4,4 +4,6 @@ GET     /username/:username         web.controllers.UserController.usernameExist
 
 POST    /user                       web.controllers.UserController.createUser()
 
-POST    /upload                     web.controllers.ResourceController.upload()
+POST    /resource                   web.controllers.ResourceController.upload()
+
+GET     /resource/:key             web.controllers.ResourceController.fetch(key)

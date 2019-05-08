@@ -2,6 +2,7 @@ package dao.user
 
 import java.util.UUID
 
+import dao.InitializableTable
 import dao.user.models.DatabaseUser
 import exceptions.FatalDatabaseException
 import javax.inject.{Inject, Singleton}
@@ -10,7 +11,6 @@ import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import scalaz.OptionT
 import scalaz.std.scalaFuture.futureInstance
 import slick.jdbc.JdbcProfile
-import slick.jdbc.meta.MTable
 import slick.lifted.ProvenShape
 import utils.MonadicUtils.OptionTWrapper
 
@@ -20,13 +20,14 @@ import scala.language.postfixOps
 @Singleton
 class SlickDatabaseUserDao @Inject()(override protected val dbConfigProvider: DatabaseConfigProvider)
     extends DatabaseUserDao
-    with HasDatabaseConfigProvider[JdbcProfile] {
+    with HasDatabaseConfigProvider[JdbcProfile] with InitializableTable {
+
   import dao.SlickMappedColumns.dateTimeMappedColumn
   import dbConfig.profile.api._
 
-  implicit val jdbcProfile: JdbcProfile = dbConfig.profile
+  override val TABLE_NAME: String = "users"
 
-  class UserTable(tag: Tag) extends Table[DatabaseUser](tag, SlickDatabaseUserDao.TABLE_NAME) {
+  class UserTable(tag: Tag) extends Table[DatabaseUser](tag, TABLE_NAME) {
     def id: Rep[UUID] = column[UUID]("id", O.PrimaryKey)
     def createdAt: Rep[DateTime] = column[DateTime]("created_at")
     def username: Rep[String] = column[String]("username", O.Unique)
@@ -75,17 +76,5 @@ class SlickDatabaseUserDao @Inject()(override protected val dbConfigProvider: Da
             }
       }
 
-  def initialize()(implicit executionContext: ExecutionContext): Future[Boolean] =
-    db.run(MTable.getTables(SlickDatabaseUserDao.TABLE_NAME))
-      .flatMap {
-        tables =>
-          if (tables.exists(_.name.name == SlickDatabaseUserDao.TABLE_NAME))
-            Future.successful(false)
-          else
-            db.run(users.schema.create).map(_ => true)
-      }
-}
-
-object SlickDatabaseUserDao {
-  val TABLE_NAME = "users"
+  override protected def initializeCommand()(implicit executionContext: ExecutionContext): Future[Unit] = db.run(users.schema.create)
 }
