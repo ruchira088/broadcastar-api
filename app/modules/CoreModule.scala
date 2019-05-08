@@ -3,14 +3,15 @@ package modules
 import java.nio.file.Paths
 
 import com.google.inject.{AbstractModule, Provides, Singleton}
-import config.LocalFileStoreConfiguration
+import config.{LocalFileStoreConfiguration, S3Configuration}
 import dao.resource.{ResourceInformationDao, SlickResourceInformationDao}
 import dao.user.{DatabaseUserDao, SlickDatabaseUserDao}
 import ec.{BlockingExecutionContext, BlockingExecutionContextImpl}
 import services.crypto.{BCryptService, CryptographyService}
-import services.storage.store.{FileStore, LocalFileStore}
+import services.storage.store.{FileStore, LocalFileStore, S3FileStore}
 import services.storage.{StorageService, StorageServiceImpl}
 import services.user.{UserService, UserServiceImpl}
+import software.amazon.awssdk.services.s3.S3AsyncClient
 import utils.SystemUtilities
 
 import scala.concurrent.duration._
@@ -25,6 +26,8 @@ class CoreModule extends AbstractModule {
     bind(classOf[BlockingExecutionContext]).to(classOf[BlockingExecutionContextImpl])
     bind(classOf[StorageService]).to(classOf[StorageServiceImpl])
     bind(classOf[LocalFileStoreConfiguration]).toInstance(LocalFileStoreConfiguration(Paths.get("./file-storage")))
+    bind(classOf[S3Configuration]).toInstance(S3Configuration("broadcastar-api-resources"))
+    bind(classOf[S3AsyncClient]).toInstance(S3AsyncClient.create())
     bind(classOf[FileStore]).to(classOf[LocalFileStore])
   }
 
