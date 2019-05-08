@@ -2,14 +2,14 @@ package web.controllers
 
 import bindings.GuiceUtils.application
 import bindings.GuiceBinding._
-import config.SystemUtilities
 import org.joda.time.DateTime
 import org.scalatestplus.play._
 import play.api.test.Helpers._
 import play.api.test._
 import utils.Matchers._
+import utils.SystemUtilities
 import utils.TestUtils.waitForResult
-import web.responses.models.HealthCheck
+import web.responses.models.HealthCheckResponse
 
 class HomeControllerSpec extends PlaySpec {
 
@@ -29,7 +29,7 @@ class HomeControllerSpec extends PlaySpec {
 
       status(home) mustBe OK
       contentType(home) must beJson
-      contentAsJson(home) must equalJsonOf(HealthCheck())
+      contentAsJson(home) must equalJsonOf(HealthCheckResponse())
 
       waitForResult(app.stop())
     }

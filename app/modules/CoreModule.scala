@@ -1,11 +1,16 @@
 package modules
 
+import java.nio.file.{Path, Paths}
+
 import com.google.inject.{AbstractModule, Provides, Singleton}
-import config.SystemUtilities
+import config.LocalFileStoreConfiguration
 import dao.user.{DatabaseUserDao, SlickDatabaseUserDao}
 import ec.{BlockingExecutionContext, BlockingExecutionContextImpl}
 import services.crypto.{BCryptService, CryptographyService}
+import services.storage.store.{FileStore, LocalFileStore}
+import services.storage.{StorageService, StorageServiceImpl}
 import services.user.{UserService, UserServiceImpl}
+import utils.SystemUtilities
 
 import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration._
@@ -17,6 +22,9 @@ class CoreModule extends AbstractModule {
     bind(classOf[UserService]).to(classOf[UserServiceImpl])
     bind(classOf[CryptographyService]).to(classOf[BCryptService])
     bind(classOf[BlockingExecutionContext]).to(classOf[BlockingExecutionContextImpl])
+    bind(classOf[StorageService]).to(classOf[StorageServiceImpl])
+    bind(classOf[LocalFileStoreConfiguration]).toInstance(LocalFileStoreConfiguration(Paths.get("./file-storage")))
+    bind(classOf[FileStore]).to(classOf[LocalFileStore])
   }
 
   @Singleton

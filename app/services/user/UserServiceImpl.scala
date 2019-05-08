@@ -2,7 +2,6 @@ package services.user
 
 import java.util.UUID
 
-import config.SystemUtilities
 import dao.user.DatabaseUserDao
 import dao.user.models.DatabaseUser
 import exceptions.aggregation.AggregatedExistingResourceException
@@ -11,7 +10,7 @@ import javax.inject.{Inject, Singleton}
 import scalaz.std.scalaFuture.futureInstance
 import services.crypto.CryptographyService
 import services.user.models.User
-import utils.MonadicUtils
+import utils.{MonadicUtils, SystemUtilities}
 import utils.MonadicUtils.OptionTWrapper
 import web.requests.CreateUserRequest
 

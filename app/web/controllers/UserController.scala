@@ -14,6 +14,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class UserController @Inject()(userService: UserService, controllerComponents: ControllerComponents)(implicit executionContext: ExecutionContext)
     extends AbstractController(controllerComponents) {
+
   def createUser(): Action[JsValue] =
     Action.async(parse.json) {
       request =>

@@ -3,3 +3,5 @@ GET     /health                     web.controllers.HomeController.healthCheck()
 GET     /username/:username         web.controllers.UserController.usernameExists(username)
 
 POST    /user                       web.controllers.UserController.createUser()
+
+POST    /upload                     web.controllers.ResourceController.upload()

@@ -1,10 +1,10 @@
 package web.controllers
 
-import config.SystemUtilities
 import javax.inject._
 import play.api.libs.json.Json
 import play.api.mvc._
-import web.responses.models.HealthCheck
+import utils.SystemUtilities
+import web.responses.models.HealthCheckResponse
 
 @Singleton
 class HomeController @Inject()(controllerComponents: ControllerComponents)(implicit systemUtilities: SystemUtilities)
@@ -12,6 +12,6 @@ class HomeController @Inject()(controllerComponents: ControllerComponents)(impli
 
   def healthCheck(): Action[AnyContent] =
     Action {
-      Ok { Json.toJson { HealthCheck() } }
+      Ok { Json.toJson { HealthCheckResponse() } }
     }
 }

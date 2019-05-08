@@ -1,14 +1,14 @@
 package web.responses.models
 
 import com.eed3si9n.ruchij.BuildInfo
-import config.SystemUtilities
 import json.JsonFormats.DateTimeFormat
 import org.joda.time.DateTime
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Json, OWrites}
+import utils.SystemUtilities
 
 import scala.util.Properties
 
-case class HealthCheck(
+case class HealthCheckResponse(
   serviceName: String,
   organization: String,
   version: String,
@@ -19,12 +19,11 @@ case class HealthCheck(
   osName: String
 )
 
-object HealthCheck {
-  implicit val healthCheckFormat: OFormat[HealthCheck] =
-    Json.format[HealthCheck]
+object HealthCheckResponse {
+  implicit val healthCheckWrites: OWrites[HealthCheckResponse] = Json.writes[HealthCheckResponse]
 
-  def apply()(implicit systemUtilities: SystemUtilities): HealthCheck =
-    HealthCheck(
+  def apply()(implicit systemUtilities: SystemUtilities): HealthCheckResponse =
+    HealthCheckResponse(
       BuildInfo.name,
       BuildInfo.organization,
       BuildInfo.version,
