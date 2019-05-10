@@ -3,10 +3,12 @@ package modules
 import java.nio.file.Paths
 
 import com.google.inject.{AbstractModule, Provides, Singleton}
-import config.{LocalFileStoreConfiguration, S3Configuration}
+import config.{AuthenticationConfiguration, LocalFileStoreConfiguration, S3Configuration}
+import dao.authentication.{AuthenticationTokenDao, SlickAuthenticationTokenDao}
 import dao.resource.{ResourceInformationDao, SlickResourceInformationDao}
 import dao.user.{DatabaseUserDao, SlickDatabaseUserDao}
 import ec.{BlockingExecutionContext, BlockingExecutionContextImpl}
+import services.authentication.{AuthenticationService, AuthenticationServiceImpl}
 import services.crypto.{BCryptService, CryptographyService}
 import services.storage.store.{FileStore, LocalFileStore, S3FileStore}
 import services.storage.{StorageService, StorageServiceImpl}
@@ -19,6 +21,7 @@ import scala.concurrent.{Await, ExecutionContext}
 import scala.language.postfixOps
 
 class CoreModule extends AbstractModule {
+
   override def configure(): Unit = {
     bind(classOf[SystemUtilities]).toInstance(SystemUtilities)
     bind(classOf[UserService]).to(classOf[UserServiceImpl])
@@ -28,6 +31,8 @@ class CoreModule extends AbstractModule {
     bind(classOf[LocalFileStoreConfiguration]).toInstance(LocalFileStoreConfiguration(Paths.get("./file-storage")))
     bind(classOf[S3Configuration]).toInstance(S3Configuration("broadcastar-api-resources"))
     bind(classOf[S3AsyncClient]).toInstance(S3AsyncClient.create())
+    bind(classOf[AuthenticationConfiguration]).toInstance(AuthenticationConfiguration(10 minutes))
+    bind(classOf[AuthenticationService]).to(classOf[AuthenticationServiceImpl])
     bind(classOf[FileStore]).to(classOf[LocalFileStore])
   }
 
@@ -44,4 +49,11 @@ class CoreModule extends AbstractModule {
     slickResourceInformationDao: SlickResourceInformationDao
   )(implicit executionContext: ExecutionContext): ResourceInformationDao =
     Await.result(slickResourceInformationDao.initialize().map(_ => slickResourceInformationDao), 60 seconds)
+
+  @Singleton
+  @Provides
+  def authenticationTokenDao(
+    slickAuthenticationTokenDao: SlickAuthenticationTokenDao
+  )(implicit executionContext: ExecutionContext): AuthenticationTokenDao =
+    Await.result(slickAuthenticationTokenDao.initialize().map(_ => slickAuthenticationTokenDao), 60 seconds)
 }

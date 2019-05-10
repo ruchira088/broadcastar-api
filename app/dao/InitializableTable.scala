@@ -1,7 +1,6 @@
 package dao
 
 import play.api.db.slick.HasDatabaseConfigProvider
-import slick.dbio.Effect
 import slick.jdbc.JdbcProfile
 import slick.jdbc.meta.MTable
 

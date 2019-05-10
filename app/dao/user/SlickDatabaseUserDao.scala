@@ -22,8 +22,8 @@ class SlickDatabaseUserDao @Inject()(override protected val dbConfigProvider: Da
     extends DatabaseUserDao
     with HasDatabaseConfigProvider[JdbcProfile] with InitializableTable {
 
-  import dao.SlickMappedColumns.dateTimeMappedColumn
   import dbConfig.profile.api._
+  import dao.SlickMappedColumns.dateTimeMappedColumn
 
   override val TABLE_NAME: String = "users"
 

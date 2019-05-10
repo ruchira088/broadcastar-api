@@ -9,6 +9,7 @@ lazy val root =
       version := "0.0.1",
       maintainer := "ruchira088@gmail.com",
       scalaVersion := SCALA_VERSION,
+      scalacOptions ++= Seq("-feature"),
       buildInfoKeys := BuildInfoKey.ofN(name, organization, version, scalaVersion, sbtVersion),
       buildInfoPackage := "com.eed3si9n.ruchij",
       libraryDependencies ++= rootDependencies ++ rootTestDependencies.map(_ % Test),
