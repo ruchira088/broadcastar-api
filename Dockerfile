@@ -8,7 +8,7 @@ RUN echo "deb https://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.lis
     apt-get update && \
     apt-get install sbt -y
 
-WORKDIR /opt/broadcastar-api
+WORKDIR /opt/chirper-api
 
 COPY . .
 

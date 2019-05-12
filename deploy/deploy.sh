@@ -4,10 +4,10 @@ buildProdDockerImage() {
     sbt dist
 
     unzip target/universal/*.zip
-    rm -rf broadcastar-api
-    mv broadcastar-api* broadcastar-api
+    rm -rf chirper-api
+    mv chirper-api* chirper-api
 
-    docker build -t broadcastar-api -f deploy/Dockerfile-prod .
+    docker build -t chirper-api -f deploy/Dockerfile-prod .
 
-    rm -rf broadcastar-api
+    rm -rf chirper-api
 }

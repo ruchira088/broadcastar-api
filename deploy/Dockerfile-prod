@@ -3,12 +3,12 @@ FROM openjdk:8-jdk
 RUN apt-get update && \
     apt-get install apt-transport-https bc ca-certificates software-properties-common -y
 
-WORKDIR /opt/broadcastar-api
+WORKDIR /opt
 
-COPY ./broadcastar-api .
+COPY . .
 
 EXPOSE 9000
 
 ENTRYPOINT ["bash"]
 
-CMD ["/opt/broadcastar-api/bin/broadcastar-api"]
+CMD ["/opt/bin/chirper-api"]

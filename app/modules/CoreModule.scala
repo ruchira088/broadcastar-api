@@ -29,7 +29,7 @@ class CoreModule extends AbstractModule {
     bind(classOf[BlockingExecutionContext]).to(classOf[BlockingExecutionContextImpl])
     bind(classOf[StorageService]).to(classOf[StorageServiceImpl])
     bind(classOf[LocalFileStoreConfiguration]).toInstance(LocalFileStoreConfiguration(Paths.get("./file-storage")))
-    bind(classOf[S3Configuration]).toInstance(S3Configuration("broadcastar-api-resources"))
+    bind(classOf[S3Configuration]).toInstance(S3Configuration("chirper-api-resources"))
     bind(classOf[S3AsyncClient]).toInstance(S3AsyncClient.create())
     bind(classOf[AuthenticationConfiguration]).toInstance(AuthenticationConfiguration(10 minutes))
     bind(classOf[AuthenticationService]).to(classOf[AuthenticationServiceImpl])

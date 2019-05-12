@@ -1,6 +1,6 @@
 logs
 target
-/.sqlite/broadcastar.db
+/.sqlite/chirper.db
 /.idea
 /.idea_modules
 /.classpath

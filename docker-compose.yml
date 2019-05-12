@@ -1,7 +1,7 @@
 version: "3"
 
 services:
-  broadcastar-api:
+  chirper-api:
     build: .
     tty: true
     command: "runWithPostgresql"
@@ -11,12 +11,12 @@ services:
     volumes:
       - "~/.sbt:/root/.sbt"
       - "~/.ivy2:/root/.ivy2"
-      - ".:/opt/broadcastar-api"
-      - "/opt/broadcastar-api/target"
-      - "/opt/broadcastar-api/project/target"
+      - ".:/opt/chirper-api"
+      - "/opt/chirper-api/target"
+      - "/opt/chirper-api/project/target"
       - "/root/.sbt/1.0/plugins"
     environment:
-      POSTGRESQL_URL: "jdbc:postgresql://postgresql-database:5432/broadcastar-api"
+      POSTGRESQL_URL: "jdbc:postgresql://postgresql-database:5432/chirper-api"
       POSTGRESQL_USER: "my-user"
       POSTGRESQL_PASSWORD: "password"
 
@@ -25,7 +25,7 @@ services:
     ports:
       - 5432:5432
     environment:
-      POSTGRES_DB: "broadcastar-api"
+      POSTGRES_DB: "chirper-api"
       POSTGRES_USER: "my-user"
       POSTGRES_PASSWORD: "password"
 

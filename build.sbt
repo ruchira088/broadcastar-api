@@ -4,7 +4,7 @@ lazy val root =
   (project in file("."))
     .enablePlugins(PlayScala, BuildInfoPlugin)
     .settings(
-      name := "broadcastar-api",
+      name := "chirper-api",
       organization := "com.ruchij",
       version := "0.0.1",
       maintainer := "ruchira088@gmail.com",

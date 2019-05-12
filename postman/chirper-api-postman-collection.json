@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "70377753-84c5-44b1-a6bf-96c414a92d93",
-		"name": "broadcastar-api",
+		"name": "chirper-api",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -130,6 +130,35 @@
 					"port": "9000",
 					"path": [
 						"username",
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"username\": \"user\",\n\t\"firstName\": \"John\",\n\t\"lastName\": \"Smith\",\n\t\"password\": \"password123\",\n\t\"email\": \"ruchira@gmail.com\"\n}"
+				},
+				"url": {
+					"raw": "localhost:9000/user",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
 						"user"
 					]
 				}
