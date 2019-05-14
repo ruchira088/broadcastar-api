@@ -1,13 +1,16 @@
 package dao.resource
 
 import dao.InitializableTable
+import exceptions.FatalDatabaseException
 import javax.inject.{Inject, Singleton}
 import org.joda.time.DateTime
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import scalaz.OptionT
+import scalaz.std.scalaFuture.futureInstance
 import services.storage.models.ResourceInformation
 import slick.jdbc.JdbcProfile
 import slick.lifted.ProvenShape
+import utils.MonadicUtils.OptionTWrapper
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
@@ -39,7 +42,10 @@ class SlickResourceInformationDao @Inject()(override protected val dbConfigProvi
   override def insert(resourceInformation: ResourceInformation)(
     implicit executionContext: ExecutionContext
   ): Future[ResourceInformation] =
-    db.run(resourceInformationItems += resourceInformation).map(_ => resourceInformation)
+    db.run(resourceInformationItems += resourceInformation)
+      .flatMap {
+        _ => getByKey(resourceInformation.key) ifEmpty Future.failed(FatalDatabaseException)
+      }
 
   override def getByKey(key: String)(
     implicit executionContext: ExecutionContext
@@ -50,5 +56,5 @@ class SlickResourceInformationDao @Inject()(override protected val dbConfigProvi
     }
 
   override protected def initializeCommand()(implicit executionContext: ExecutionContext): Future[Unit] =
-    db.run(resourceInformationItems.schema.create)
+    db.run(resourceInformationItems.schema.createIfNotExists)
 }

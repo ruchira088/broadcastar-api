@@ -4,6 +4,7 @@ import java.util.UUID
 
 import dao.InitializableTable
 import dao.authentication.model.SlickAuthenticationToken
+import exceptions.FatalDatabaseException
 import javax.inject.{Inject, Singleton}
 import org.joda.time.DateTime
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
@@ -12,6 +13,7 @@ import scalaz.std.scalaFuture.futureInstance
 import services.authentication.models.AuthenticationToken
 import slick.jdbc.JdbcProfile
 import slick.lifted.ProvenShape
+import utils.MonadicUtils.OptionTWrapper
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
@@ -44,7 +46,9 @@ class SlickAuthenticationTokenDao @Inject()(override protected val dbConfigProvi
     authenticationToken: AuthenticationToken
   )(implicit executionContext: ExecutionContext): Future[AuthenticationToken] =
     db.run(authenticationTokens += SlickAuthenticationToken.fromAuthenticationToken(authenticationToken))
-      .map(_ => authenticationToken)
+      .flatMap {
+        _ => getBySessionToken(AuthenticationToken.sessionToken(authenticationToken)) ifEmpty Future.failed(FatalDatabaseException)
+      }
 
   override def getBySessionToken(sessionToken: String)(
     implicit executionContext: ExecutionContext
@@ -66,5 +70,5 @@ class SlickAuthenticationTokenDao @Inject()(override protected val dbConfigProvi
       .flatMap { _ => getBySessionToken(AuthenticationToken.sessionToken(authenticationToken)) }
 
   override protected def initializeCommand()(implicit executionContext: ExecutionContext): Future[Unit] =
-    db.run(authenticationTokens.schema.create)
+    db.run(authenticationTokens.schema.createIfNotExists)
 }

@@ -4,6 +4,8 @@ GET     /username/:username         web.controllers.UserController.usernameExist
 
 POST    /user                       web.controllers.UserController.createUser()
 
+POST    /user/:userId/email-verification    web.controllers.UserController.verifyEmail(userId: java.util.UUID)
+
 POST    /session                    web.controllers.UserController.sessionToken()
 
 POST    /resource                   web.controllers.ResourceController.upload()

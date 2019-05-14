@@ -8,7 +8,7 @@ import utils.SystemUtilities
 import web.requests.CreateUserRequest
 
 case class DatabaseUser(
-  id: UUID,
+  userId: UUID,
   createdAt: DateTime,
   username: String,
   firstName: String,
@@ -35,7 +35,7 @@ object DatabaseUser {
 
   def toUser(databaseUser: DatabaseUser): User =
     User(
-      databaseUser.id,
+      databaseUser.userId,
       databaseUser.createdAt,
       databaseUser.username,
       databaseUser.firstName,

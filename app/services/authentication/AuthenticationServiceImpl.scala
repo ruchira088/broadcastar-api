@@ -41,7 +41,7 @@ class AuthenticationServiceImpl @Inject()(
 
           authenticationToken <- authenticationTokenDao.insert {
             AuthenticationToken(
-              databaseUser.id,
+              databaseUser.userId,
               systemUtilities.randomUuid(),
               systemUtilities.currentTime(),
               systemUtilities.currentTime().plusMillis(authenticationConfiguration.sessionDuration.toMillis.toInt)

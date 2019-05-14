@@ -46,7 +46,7 @@ class SlickDatabaseUserDao @Inject()(override protected val dbConfigProvider: Da
   override def insert(databaseUser: DatabaseUser)(implicit executionContext: ExecutionContext): Future[DatabaseUser] =
     db.run(users += databaseUser)
       .flatMap {
-        _ => getById(databaseUser.id) ifEmpty Future.failed(FatalDatabaseException)
+        _ => getById(databaseUser.userId) ifEmpty Future.failed(FatalDatabaseException)
       }
 
   override def getById(id: UUID)(implicit executionContext: ExecutionContext): OptionT[Future, DatabaseUser] =
@@ -63,18 +63,18 @@ class SlickDatabaseUserDao @Inject()(override protected val dbConfigProvider: Da
       db.run(users.filter(selector).take(1).result).map(_.headOption)
     }
 
-  override def verifiedEmail(email: String)(implicit executionContext: ExecutionContext): OptionT[Future, Boolean] =
-    getByEmail(email)
+  override def verifyEmail(id: UUID)(implicit executionContext: ExecutionContext): OptionT[Future, Boolean] =
+    getById(id)
       .flatMap {
         databaseUser =>
           if (databaseUser.emailVerified)
             OptionT.some[Future, Boolean](true)
           else
             OptionT[Future, Boolean] {
-              db.run(users.filter(_.email === email).map(_.emailVerified).update(true))
+              db.run(users.filter(_.id === id).map(_.emailVerified).update(true))
                 .map(_ => Some(false))
             }
       }
 
-  override protected def initializeCommand()(implicit executionContext: ExecutionContext): Future[Unit] = db.run(users.schema.create)
+  override protected def initializeCommand()(implicit executionContext: ExecutionContext): Future[Unit] = db.run(users.schema.createIfNotExists)
 }

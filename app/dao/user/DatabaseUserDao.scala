@@ -16,5 +16,5 @@ trait DatabaseUserDao {
 
   def getByEmail(email: String)(implicit executionContext: ExecutionContext): OptionT[Future, DatabaseUser]
 
-  def verifiedEmail(email: String)(implicit executionContext: ExecutionContext): OptionT[Future, Boolean]
+  def verifyEmail(id: UUID)(implicit executionContext: ExecutionContext): OptionT[Future, Boolean]
 }

@@ -15,6 +15,7 @@ services:
       - "/opt/chirper-api/target"
       - "/opt/chirper-api/project/target"
       - "/root/.sbt/1.0/plugins"
+      - "~/.aws:/root/.aws"
     environment:
       POSTGRESQL_URL: "jdbc:postgresql://postgresql-database:5432/chirper-api"
       POSTGRESQL_USER: "my-user"

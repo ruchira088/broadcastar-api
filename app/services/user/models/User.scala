@@ -7,7 +7,7 @@ import org.joda.time.DateTime
 import play.api.libs.json.{Json, OFormat}
 
 case class User(
-  id: UUID,
+  userId: UUID,
   createdAt: DateTime,
   username: String,
   firstName: String,

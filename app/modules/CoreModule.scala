@@ -7,7 +7,9 @@ import config.{AuthenticationConfiguration, LocalFileStoreConfiguration, S3Confi
 import dao.authentication.{AuthenticationTokenDao, SlickAuthenticationTokenDao}
 import dao.resource.{ResourceInformationDao, SlickResourceInformationDao}
 import dao.user.{DatabaseUserDao, SlickDatabaseUserDao}
+import dao.verification.{EmailVerificationEntryDao, SlickEmailVerificationEntryDao}
 import ec.{BlockingExecutionContext, BlockingExecutionContextImpl}
+import modules.CoreModule.await
 import services.authentication.{AuthenticationService, AuthenticationServiceImpl}
 import services.crypto.{BCryptService, CryptographyService}
 import services.storage.store.{FileStore, LocalFileStore, S3FileStore}
@@ -17,7 +19,7 @@ import software.amazon.awssdk.services.s3.S3AsyncClient
 import utils.SystemUtilities
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.language.postfixOps
 
 class CoreModule extends AbstractModule {
@@ -41,19 +43,28 @@ class CoreModule extends AbstractModule {
   def databaseUserDao(
     slickDatabaseUserDao: SlickDatabaseUserDao
   )(implicit executionContext: ExecutionContext): DatabaseUserDao =
-    Await.result(slickDatabaseUserDao.initialize().map(createdTable => slickDatabaseUserDao), 60 seconds)
+    await(slickDatabaseUserDao.initialize().map(createdTable => slickDatabaseUserDao))
 
   @Singleton
   @Provides
   def resourceInformationDao(
     slickResourceInformationDao: SlickResourceInformationDao
   )(implicit executionContext: ExecutionContext): ResourceInformationDao =
-    Await.result(slickResourceInformationDao.initialize().map(_ => slickResourceInformationDao), 60 seconds)
+    await(slickResourceInformationDao.initialize().map(_ => slickResourceInformationDao))
 
   @Singleton
   @Provides
   def authenticationTokenDao(
     slickAuthenticationTokenDao: SlickAuthenticationTokenDao
   )(implicit executionContext: ExecutionContext): AuthenticationTokenDao =
-    Await.result(slickAuthenticationTokenDao.initialize().map(_ => slickAuthenticationTokenDao), 60 seconds)
+    await(slickAuthenticationTokenDao.initialize().map(_ => slickAuthenticationTokenDao))
+
+  @Singleton
+  @Provides
+  def emailVerificationEntryDao(slickEmailVerificationEntryDao: SlickEmailVerificationEntryDao)(implicit executionContext: ExecutionContext): EmailVerificationEntryDao =
+    await(slickEmailVerificationEntryDao.initialize().map(_ => slickEmailVerificationEntryDao))
+}
+
+object CoreModule {
+  private def await[A](future: Future[A]): A = Await.result(future, 60 seconds)
 }
