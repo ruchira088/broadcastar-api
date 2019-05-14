@@ -28,7 +28,7 @@ class SlickDatabaseUserDao @Inject()(override protected val dbConfigProvider: Da
   override val TABLE_NAME: String = "users"
 
   class UserTable(tag: Tag) extends Table[DatabaseUser](tag, TABLE_NAME) {
-    def id: Rep[UUID] = column[UUID]("id", O.PrimaryKey)
+    def userId: Rep[UUID] = column[UUID]("user_id", O.PrimaryKey)
     def createdAt: Rep[DateTime] = column[DateTime]("created_at")
     def username: Rep[String] = column[String]("username", O.Unique)
     def firstName: Rep[String] = column[String]("first_name")
@@ -38,7 +38,7 @@ class SlickDatabaseUserDao @Inject()(override protected val dbConfigProvider: Da
     def emailVerified: Rep[Boolean] = column[Boolean]("email_verified")
 
     override def * : ProvenShape[DatabaseUser] =
-      (id, createdAt, username, firstName, lastName, email, password, emailVerified) <> (DatabaseUser.apply _ tupled, DatabaseUser.unapply)
+      (userId, createdAt, username, firstName, lastName, email, password, emailVerified) <> (DatabaseUser.apply _ tupled, DatabaseUser.unapply)
   }
 
   val users = TableQuery[UserTable]
@@ -50,7 +50,7 @@ class SlickDatabaseUserDao @Inject()(override protected val dbConfigProvider: Da
       }
 
   override def getById(id: UUID)(implicit executionContext: ExecutionContext): OptionT[Future, DatabaseUser] =
-    getBySelector(_.id === id)
+    getBySelector(_.userId === id)
 
   override def getByUsername(username: String)(implicit executionContext: ExecutionContext): OptionT[Future, DatabaseUser] =
     getBySelector(_.username === username)
@@ -71,7 +71,7 @@ class SlickDatabaseUserDao @Inject()(override protected val dbConfigProvider: Da
             OptionT.some[Future, Boolean](true)
           else
             OptionT[Future, Boolean] {
-              db.run(users.filter(_.id === id).map(_.emailVerified).update(true))
+              db.run(users.filter(_.userId === id).map(_.emailVerified).update(true))
                 .map(_ => Some(false))
             }
       }
