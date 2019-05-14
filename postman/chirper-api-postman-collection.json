@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "70377753-84c5-44b1-a6bf-96c414a92d93",
-		"name": "chirper-api",
+		"name": "Chirper API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -86,6 +86,49 @@
 		},
 		{
 			"name": "Create user",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "10917c22-fa30-483d-af90-01a11b2c87ad",
+						"exec": [
+							"const FIRST_NAMES = [ \"Ethelyn\", \"Cordia\", \"Anthony\", \"Lauren\", \"Asia\", \"Giovanni\", \"Jennefer\", \"Deedee\", \"Cherise\", \"Erminia\", \"Adolfo\", \"Jan\", \"Elliott\", \"Santo\", \"Griselda\", \"Wilbur\", \"John\", \"Dwain\", \"Giuseppe\", \"Bryanna\", \"Neomi\", \"Salvador\", \"Florentina\", \"Kareen\", \"Mac\", \"Vaughn\", \"Gretchen\", \"Cristopher\", \"Sharan\", \"Teodoro\", \"Leda\", \"Ok\", \"Orlando\", \"Percy\", \"Leon\", \"Isidro\", \"Margie\", \"Nell\", \"Dawne\", \"Adolph\", \"Sari\", \"Cari\", \"Ha\", \"Danny\", \"Wilhemina\", \"Earle\", \"Cory\", \"Ulysses\", \"Deidre\", \"Caroline\", \"Kerry\", \"Marlin\", \"Valery\", \"Cyril\", \"Julio\", \"Lance\", \"Fredia\", \"Mimi\", \"Jerrold\", \"Nathalie\", \"Jame\", \"Foster\", \"Larue\", \"Eboni\", \"Philip\", \"Dion\", \"Sherill\", \"Eliana\", \"Romeo\", \"Gay\", \"Lawrence\", \"Russell\", \"Joaquin\", \"Sherrie\", \"Sebastian\", \"Kip\", \"Mandi\", \"Corrina\", \"Diana\", \"Juana\", \"Cecila\", \"Coletta\", \"Raylene\", \"Preston\", \"Briana\", \"Isaias\", \"Twila\", \"Janise\", \"Ivana\", \"Toni\", \"Cameron\", \"Eli\", \"Katelynn\", \"Celinda\", \"Bette\", \"Danna\", \"Reed\", \"Marco\", \"Rex\", \"Brianne\", \"Makeda\", \"Tommie\", \"Joette\", \"Otis\", \"Dave\", \"Myron\", \"Margaretta\", \"Arden\", \"Hiram\", \"Eun\", \"Sadye\", \"Jacinto\", \"Kelvin\", \"Randell\", \"Flora\", \"Brigette\", \"Christen\", \"Dario\", \"Sandi\", \"Devin\", \"Donny\", \"Effie\", \"Rodger\", \"Yoshiko\", \"Troy\", \"Domenic\", \"Margarette\", \"Nick\", \"Ronda\", \"Alta\", \"Monty\", \"Mariann\", \"Darnell\", \"Thurman\", \"Jesus\", \"Ruby\", \"Dante\", \"Rudolph\", \"Harmony\", \"Darryl\", \"Sung\", \"Pearly\", \"Holley\", \"Mack\", \"Merilyn\", \"Rodney\", \"Stephan\", \"Oscar\", \"Suk\", \"Chase\", \"Gerald\", \"Evon\", \"Jamey\", \"Adriene\", \"Octavio\", \"Shemeka\", \"Kathey\", \"Samella\", \"Twanda\", \"Hyun\", \"Maxine\", \"Jed\", \"Lilia\", \"Anika\", \"Chang\", \"Von\", \"Milo\", \"Lai\", \"Waylon\", \"Willy\", \"Scott\", \"Lezlie\", \"Carrol\", \"Elton\", \"Cherrie\", \"Agueda\", \"Miki\", \"Tiesha\", \"Jayson\", \"Bridget\", \"Leanne\", \"Carmela\", \"Tameika\", \"Heide\", \"Elenore\", \"Clayton\", \"Morgan\", \"Nakesha\", \"Misti\", \"Brenton\", \"Jules\", \"Lovetta\", \"Stephany\", \"Mike\", \"Myrtice\", \"Shae\", \"Natosha\", \"Sofia\", \"Benjamin\", \"Donnell\" ]",
+							"",
+							"const LAST_NAMES = [ \"Hyatt\", \"Rolfson\", \"Graham\", \"Wyman\", \"Cummerata\", \"Barrows\", \"Flatley\", \"Koss\", \"Kling\", \"Herzog\", \"Brakus\", \"Hodkiewicz\", \"Cole\", \"Boyle\", \"Hoppe\", \"Hackett\", \"Schiller\", \"Ruecker\", \"Renner\", \"Doyle\", \"Wolf\", \"Weimann\", \"Mills\", \"Gulgowski\", \"Beatty\", \"O'Reilly\", \"Murray\", \"Hessel\", \"Thiel\", \"Gerhold\", \"Schuppe\", \"Roob\", \"Goyette\", \"Stehr\", \"Hirthe\", \"Trantow\", \"Ledner\", \"Kovacek\", \"Gibson\", \"Davis\", \"Bode\", \"Koepp\", \"Konopelski\", \"Spencer\", \"Rowe\", \"Feeney\", \"Haley\", \"McDermott\", \"Jacobs\", \"Cassin\", \"McLaughlin\", \"Brown\", \"Paucek\", \"Botsford\", \"Monahan\", \"Altenwerth\", \"Bernhard\", \"Kuhic\", \"Weber\", \"Hintz\", \"Gislason\", \"Marquardt\", \"Sauer\", \"Johns\", \"Nader\", \"Roberts\", \"Murphy\", \"Pouros\", \"Emmerich\", \"Huels\", \"Hartmann\", \"Skiles\", \"Fadel\", \"Glover\", \"Padberg\", \"Stiedemann\", \"Kertzmann\", \"Wilderman\", \"Lindgren\", \"Ryan\", \"Luettgen\", \"Ferry\", \"Weissnat\", \"Huel\", \"Quitzon\", \"Durgan\", \"Keebler\", \"Zulauf\", \"Kirlin\", \"Smith\", \"Grimes\", \"Hahn\", \"Zemlak\", \"Mitchell\", \"Cartwright\", \"Parisian\", \"Sipes\", \"Tremblay\", \"Strosin\", \"Kiehn\", \"Lang\", \"Williamson\", \"Smitham\", \"Hand\", \"Block\", \"Willms\", \"Grant\", \"Leannon\", \"Maggio\", \"Dietrich\", \"Towne\", \"Jaskolski\", \"Simonis\", \"O'Keefe\", \"Blanda\", \"Terry\", \"Rippin\", \"Thompson\", \"Bins\", \"Legros\", \"Walsh\", \"Bernier\", \"Moen\", \"Collier\", \"Gorczany\", \"Bradtke\", \"Cremin\", \"Crist\", \"Waters\", \"Wisoky\", \"Yundt\", \"Upton\", \"Pollich\", \"Ondricka\", \"Bailey\", \"Ankunding\", \"Wintheiser\", \"Yost\", \"Heaney\", \"Kunze\", \"Schaden\", \"Windler\", \"Aufderhar\", \"Macejkovic\", \"Wuckert\", \"Gutmann\", \"Lockman\", \"Larson\", \"Boehm\", \"Frami\", \"Langosh\", \"Bruen\", \"Collins\", \"Shields\", \"Nicolas\", \"Erdman\", \"Keeling\", \"Murazik\", \"Bosco\", \"Leuschke\", \"Dare\", \"Rau\", \"Lesch\", \"Senger\", \"Prosacco\", \"Krajcik\", \"Beier\", \"Hagenes\", \"Von\", \"Pagac\", \"Buckridge\", \"Zboncak\", \"Koelpin\", \"McCullough\", \"Stamm\", \"Kozey\", \"Stroman\", \"Satterfield\", \"Hilpert\", \"O'Hara\", \"Deckow\", \"O'Connell\", \"Prohaska\", \"Sporer\", \"Mayer\", \"Goldner\", \"Tillman\", \"Barton\", \"Harvey\", \"Stokes\", \"Mohr\", \"Jakubowski\", \"Schowalter\", \"Gleichner\", \"Mann\", \"Champlin\", \"Runte\", \"Armstrong\", \"Abernathy\", \"Cormier\" ]",
+							"",
+							"",
+							"const EMAIL_DOMAINS = [ \"gmail.com\", \"live.com\", \"hotmail.com\", \"yahoo.com\", \"icloud.com\", \"outlook.com\", \"me.com\", \"zoho.com\", \"ruchij.com\" ]",
+							"",
+							"const randomValue = array => array[Math.floor(Math.random() * array.length)]",
+							"",
+							"const setValue = (name, value) => pm.environment.set(name, value)",
+							"const removeNonAlphanumeric = string => string.replace(/\\W/g, \"\").toLowerCase()",
+							"",
+							"const firstName = randomValue(FIRST_NAMES)",
+							"const lastName = randomValue(LAST_NAMES)",
+							"const username = `${removeNonAlphanumeric(firstName)}.${removeNonAlphanumeric(lastName)}`",
+							"const email = `${username}@${randomValue(EMAIL_DOMAINS)}`",
+							"",
+							"setValue(\"firstName\", firstName)",
+							"setValue(\"lastName\", lastName)",
+							"setValue(\"username\", username)",
+							"setValue(\"email\", email)",
+							"setValue(\"password\", \"passw0rd123\")"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "c22020fc-a5a9-4adf-b4c9-af7694694b25",
+						"exec": [
+							"pm.environment.set(\"userId\", pm.response.json().userId)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [
@@ -98,7 +141,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"username\": \"user\",\n\t\"firstName\": \"John\",\n\t\"lastName\": \"Smith\",\n\t\"password\": \"password123\",\n\t\"email\": \"ruchira@gmail.com\"\n}"
+					"raw": "{\n\t\"username\": \"{{username}}\",\n\t\"firstName\": \"{{firstName}}\",\n\t\"lastName\": \"{{lastName}}\",\n\t\"password\": \"{{password}}\",\n\t\"email\": \"{{email}}\"\n}"
 				},
 				"url": {
 					"raw": "localhost:9000/user",
@@ -123,14 +166,14 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "localhost:9000/username/user",
+					"raw": "localhost:9000/username/{{username}}",
 					"host": [
 						"localhost"
 					],
 					"port": "9000",
 					"path": [
 						"username",
-						"user"
+						"{{username}}"
 					]
 				}
 			},
@@ -138,6 +181,18 @@
 		},
 		{
 			"name": "Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "898ff495-540c-41f9-9dad-9ea61a634cff",
+						"exec": [
+							"pm.environment.set(\"sessionToken\", pm.response.json().sessionToken)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [
@@ -150,16 +205,47 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"username\": \"user\",\n\t\"firstName\": \"John\",\n\t\"lastName\": \"Smith\",\n\t\"password\": \"password123\",\n\t\"email\": \"ruchira@gmail.com\"\n}"
+					"raw": "{\n\t\"username\": \"{{username}}\",\n\t\"password\": \"{{password}}\"\n}"
 				},
 				"url": {
-					"raw": "localhost:9000/user",
+					"raw": "localhost:9000/session",
 					"host": [
 						"localhost"
 					],
 					"port": "9000",
 					"path": [
-						"user"
+						"session"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify email",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"verificationToken\": \"{{verificationToken}}\"\n}"
+				},
+				"url": {
+					"raw": "localhost:9000/user/{{userId}}/email-verification",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"user",
+						"{{userId}}",
+						"email-verification"
 					]
 				}
 			},
