@@ -1,10 +1,13 @@
 package utils
-import java.util.concurrent.TimeUnit
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future}
+import play.api.libs.json.{JsObject, Json, OWrites}
+import play.api.mvc.Headers
+import play.api.test.Helpers._
+import play.api.test.{FakeHeaders, FakeRequest}
 
 object TestUtils {
-  def waitForResult[A](future: Future[A]): A =
-    Await.result(future, Duration(10, TimeUnit.SECONDS))
+  val DEFAULT_HEADERS = FakeHeaders(List(HOST -> "localhost"))
+
+  def postRequest[A: OWrites](url: String, body: A, headers: Headers = FakeHeaders()): FakeRequest[JsObject] =
+    FakeRequest[JsObject](POST, url, DEFAULT_HEADERS.add(headers.headers: _*), Json.toJsObject(body))
 }

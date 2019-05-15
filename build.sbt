@@ -19,7 +19,7 @@ lazy val root =
 
 lazy val rootDependencies = Seq(guice, scalaz, jodaTime, playSlick, postgresql, sqlite, jbcrypt, commonsValidator, s3)
 
-lazy val rootTestDependencies = Seq(scalaTestPlusPlay, h2, pegdown)
+lazy val rootTestDependencies = Seq(scalaTestPlusPlay, h2, pegdown, faker)
 
 addCommandAlias("runWithPostgresql", "run -Dconfig.file=conf/application.postgresql.conf")
 addCommandAlias("runWithSqlite", "run -Dconfig.file=conf/application.sqlite.conf")

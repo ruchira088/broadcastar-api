@@ -8,9 +8,8 @@ import dao.reset.ResetPasswordTokenDao
 import dao.reset.models.ResetPasswordToken
 import dao.user.DatabaseUserDao
 import dao.user.models.DatabaseUser
-import exceptions.{ExpiredPasswordResetTokenException, FatalDatabaseException, InvalidCredentialsException, ResourceNotFoundException, UnverifiedEmailException}
+import exceptions._
 import javax.inject.{Inject, Singleton}
-import scalaz.OptionT
 import scalaz.std.scalaFuture.futureInstance
 import services.authentication.models.AuthenticationToken
 import services.crypto.CryptographyService
@@ -114,5 +113,4 @@ class AuthenticationServiceImpl @Inject()(
       updatedDatabaseUser <- databaseUserDao.update(databaseUser.userId, databaseUser.copy(password = hashedPassword)) ifEmpty Future.failed(FatalDatabaseException)
     }
     yield DatabaseUser.toUser(updatedDatabaseUser)
-
 }

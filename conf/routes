@@ -4,7 +4,11 @@ GET     /username/:username         web.controllers.UserController.usernameExist
 
 POST    /user                       web.controllers.UserController.createUser()
 
-POST    /user/:userId/email-verification    web.controllers.UserController.verifyEmail(userId: java.util.UUID)
+POST    /password/reset-token       web.controllers.UserController.forgotPassword()
+
+PUT     /user/:userId/password      web.controllers.UserController.resetPassword(userId: java.util.UUID)
+
+PUT     /user/:userId/email-verification    web.controllers.UserController.verifyEmail(userId: java.util.UUID)
 
 POST    /session                    web.controllers.UserController.sessionToken()
 

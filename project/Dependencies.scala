@@ -24,4 +24,6 @@ object Dependencies {
   lazy val scalaTestPlusPlay = "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.2"
   
   lazy val pegdown = "org.pegdown" % "pegdown" % "1.6.0"
+  
+  lazy val faker = "com.github.javafaker" % "javafaker" % "0.18"
 }
