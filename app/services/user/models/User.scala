@@ -12,7 +12,8 @@ case class User(
   username: String,
   firstName: String,
   lastName: Option[String],
-  email: String
+  email: String,
+  profileImageId: Option[String]
 )
 
 object User {

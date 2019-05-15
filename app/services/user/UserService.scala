@@ -12,7 +12,7 @@ trait UserService {
 
   def usernameExists(username: String)(implicit executionContext: ExecutionContext): Future[Boolean]
 
-  def verifyEmail(userId: UUID, verificationToken: UUID)(implicit executionContext: ExecutionContext): Future[User]
+  def verifyEmail(userId: UUID, secret: UUID)(implicit executionContext: ExecutionContext): Future[User]
 
   def getUserById(userId: UUID)(implicit executionContext: ExecutionContext): Future[User]
 }

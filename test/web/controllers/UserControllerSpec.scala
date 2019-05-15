@@ -41,7 +41,8 @@ class UserControllerSpec extends PlaySpec {
           createUserRequest.username,
           createUserRequest.firstName,
           createUserRequest.lastName,
-          createUserRequest.email
+          createUserRequest.email,
+          createUserRequest.profileImageId
         )
 
       status(response) mustBe CREATED

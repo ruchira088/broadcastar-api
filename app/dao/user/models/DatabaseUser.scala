@@ -15,6 +15,7 @@ case class DatabaseUser(
   lastName: Option[String],
   email: String,
   password: String,
+  profileImageId: Option[String],
   emailVerified: Boolean
 )
 
@@ -30,6 +31,7 @@ object DatabaseUser {
       createUserRequest.lastName.flatMap(value => if (value.trim.isEmpty) None else Some(value)),
       createUserRequest.email,
       saltedHashedPassword,
+      createUserRequest.profileImageId,
       emailVerified = false
     )
 
@@ -40,6 +42,7 @@ object DatabaseUser {
       databaseUser.username,
       databaseUser.firstName,
       databaseUser.lastName,
-      databaseUser.email
+      databaseUser.email,
+      databaseUser.profileImageId
     )
 }

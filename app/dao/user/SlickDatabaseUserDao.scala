@@ -35,10 +35,11 @@ class SlickDatabaseUserDao @Inject()(override protected val dbConfigProvider: Da
     def lastName: Rep[Option[String]] = column[Option[String]]("last_name")
     def email: Rep[String] = column[String]("email", O.Unique)
     def password: Rep[String] = column[String]("password")
+    def profileImageId: Rep[Option[String]] = column[Option[String]]("profile_image_id")
     def emailVerified: Rep[Boolean] = column[Boolean]("email_verified")
 
     override def * : ProvenShape[DatabaseUser] =
-      (userId, createdAt, username, firstName, lastName, email, password, emailVerified) <> (DatabaseUser.apply _ tupled, DatabaseUser.unapply)
+      (userId, createdAt, username, firstName, lastName, email, password, profileImageId, emailVerified) <> (DatabaseUser.apply _ tupled, DatabaseUser.unapply)
   }
 
   val users = TableQuery[UserTable]
