@@ -65,4 +65,5 @@ object MonadicUtils {
 
   def recoverWith[M[_], A, Error](recoveryFunction: PartialFunction[Error, A])(monad: M[A])(implicit monadError: MonadError[M, Error]): M[A] =
     monadError.handleError(monad)(recoveryFunction.andThen(value => monadError.pure(value)))
+
 }

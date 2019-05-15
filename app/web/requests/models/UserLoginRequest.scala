@@ -1,8 +1,9 @@
-package web.requests
+package web.requests.models
 
 import exceptions.ValidationException
 import play.api.libs.json.{Json, OFormat}
 import utils.MonadicUtils.{predicate, sequence, tryMonadError}
+import web.requests.Validator
 
 import scala.util.Try
 

@@ -2,6 +2,7 @@ package web.requests
 
 import exceptions.ValidationException
 import exceptions.aggregation.AggregatedValidationException
+import org.apache.commons.validator.routines.EmailValidator
 import utils.MonadicUtils.{predicate, sequence, tryMonadError}
 
 import scala.util.{Failure, Success, Try}
@@ -26,4 +27,18 @@ object Validator {
           _ => Success(value)
         )
       }
+
+  val emailValidator: String => Try[Unit] =
+    email =>
+      predicate[Try, Throwable](
+        EmailValidator.getInstance().isValid(email),
+        ValidationException(s"$email is NOT a valid email address")
+    )
+
+  val passwordValidator: String => Try[Unit] =
+    password =>
+      predicate[Try, Throwable](
+        password.trim.length > 8,
+        ValidationException("password length must be greater than 8 characters")
+    )
 }

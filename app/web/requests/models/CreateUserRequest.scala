@@ -1,7 +1,7 @@
-package web.requests
+package web.requests.models
 
-import org.apache.commons.validator.routines.EmailValidator
 import play.api.libs.json.{Json, OFormat}
+import web.requests.Validator
 import web.requests.Validator.{combine, validate => validator}
 
 import scala.util.Try
@@ -23,8 +23,8 @@ object CreateUserRequest {
       combine(createUserRequest) (
         validator(_.username.trim.nonEmpty, "username must NOT be empty"),
         validator(_.firstName.trim.nonEmpty, "firstName must NOT be empty"),
-        validator(_.password.trim.length > 8, "password length must be greater than 8 characters"),
-        validator(_ => EmailValidator.getInstance().isValid(createUserRequest.email), s"${createUserRequest.email} is NOT a valid email address"),
+        Validator.passwordValidator.compose(_.password),
+        Validator.emailValidator.compose(_.email)
       )
   }
 }

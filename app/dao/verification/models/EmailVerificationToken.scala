@@ -4,9 +4,9 @@ import java.util.UUID
 
 import org.joda.time.DateTime
 
-case class EmailVerificationEntry(
+case class EmailVerificationToken(
   userId: UUID,
-  verificationToken: UUID,
+  secret: UUID,
   email: String,
   createdAt: DateTime,
   verifiedAt: Option[DateTime]

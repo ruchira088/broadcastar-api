@@ -5,7 +5,7 @@ import java.util.UUID
 import org.joda.time.DateTime
 import services.user.models.User
 import utils.SystemUtilities
-import web.requests.CreateUserRequest
+import web.requests.models.CreateUserRequest
 
 case class DatabaseUser(
   userId: UUID,

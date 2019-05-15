@@ -5,9 +5,10 @@ import java.nio.file.Paths
 import com.google.inject.{AbstractModule, Provides, Singleton}
 import config.{AuthenticationConfiguration, LocalFileStoreConfiguration, S3Configuration}
 import dao.authentication.{AuthenticationTokenDao, SlickAuthenticationTokenDao}
+import dao.reset.{ResetPasswordTokenDao, SlickResetPasswordTokenDao}
 import dao.resource.{ResourceInformationDao, SlickResourceInformationDao}
 import dao.user.{DatabaseUserDao, SlickDatabaseUserDao}
-import dao.verification.{EmailVerificationEntryDao, SlickEmailVerificationEntryDao}
+import dao.verification.{EmailVerificationTokenDao, SlickEmailVerificationTokenDao}
 import ec.{BlockingExecutionContext, BlockingExecutionContextImpl}
 import modules.CoreModule.await
 import services.authentication.{AuthenticationService, AuthenticationServiceImpl}
@@ -33,7 +34,7 @@ class CoreModule extends AbstractModule {
     bind(classOf[LocalFileStoreConfiguration]).toInstance(LocalFileStoreConfiguration(Paths.get("./file-storage")))
     bind(classOf[S3Configuration]).toInstance(S3Configuration("chirper-api-resources"))
     bind(classOf[S3AsyncClient]).toInstance(S3AsyncClient.create())
-    bind(classOf[AuthenticationConfiguration]).toInstance(AuthenticationConfiguration(10 minutes))
+    bind(classOf[AuthenticationConfiguration]).toInstance(AuthenticationConfiguration(10 minutes, 10 minutes))
     bind(classOf[AuthenticationService]).to(classOf[AuthenticationServiceImpl])
     bind(classOf[FileStore]).to(classOf[LocalFileStore])
   }
@@ -61,8 +62,13 @@ class CoreModule extends AbstractModule {
 
   @Singleton
   @Provides
-  def emailVerificationEntryDao(slickEmailVerificationEntryDao: SlickEmailVerificationEntryDao)(implicit executionContext: ExecutionContext): EmailVerificationEntryDao =
-    await(slickEmailVerificationEntryDao.initialize().map(_ => slickEmailVerificationEntryDao))
+  def emailVerificationTokenDao(slickEmailVerificationTokenDao: SlickEmailVerificationTokenDao)(implicit executionContext: ExecutionContext): EmailVerificationTokenDao =
+    await(slickEmailVerificationTokenDao.initialize().map(_ => slickEmailVerificationTokenDao))
+
+  @Singleton
+  @Provides
+  def passwordResetToken(slickResetPasswordTokenDao: SlickResetPasswordTokenDao)(implicit executionContext: ExecutionContext): ResetPasswordTokenDao =
+    await(slickResetPasswordTokenDao.initialize().map(_ => slickResetPasswordTokenDao))
 }
 
 object CoreModule {

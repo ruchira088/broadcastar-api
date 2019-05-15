@@ -46,10 +46,10 @@ class SlickDatabaseUserDao @Inject()(override protected val dbConfigProvider: Da
   override def insert(databaseUser: DatabaseUser)(implicit executionContext: ExecutionContext): Future[DatabaseUser] =
     db.run(users += databaseUser)
       .flatMap {
-        _ => getById(databaseUser.userId) ifEmpty Future.failed(FatalDatabaseException)
+        _ => getByUserId(databaseUser.userId) ifEmpty Future.failed(FatalDatabaseException)
       }
 
-  override def getById(id: UUID)(implicit executionContext: ExecutionContext): OptionT[Future, DatabaseUser] =
+  override def getByUserId(id: UUID)(implicit executionContext: ExecutionContext): OptionT[Future, DatabaseUser] =
     getBySelector(_.userId === id)
 
   override def getByUsername(username: String)(implicit executionContext: ExecutionContext): OptionT[Future, DatabaseUser] =
@@ -64,7 +64,7 @@ class SlickDatabaseUserDao @Inject()(override protected val dbConfigProvider: Da
     }
 
   override def verifyEmail(id: UUID)(implicit executionContext: ExecutionContext): OptionT[Future, Boolean] =
-    getById(id)
+    getByUserId(id)
       .flatMap {
         databaseUser =>
           if (databaseUser.emailVerified)
@@ -76,5 +76,13 @@ class SlickDatabaseUserDao @Inject()(override protected val dbConfigProvider: Da
             }
       }
 
+  override def update(userId: UUID, databaseUser: DatabaseUser)(implicit executionContext: ExecutionContext): OptionT[Future, DatabaseUser] =
+    getByUserId(userId)
+      .flatMapF {
+        _ => db.run { users.filter(_.userId === userId).update(databaseUser) }
+      }
+      .flatMap(_ => getByUserId(databaseUser.userId))
+
   override protected def initializeCommand()(implicit executionContext: ExecutionContext): Future[Unit] = db.run(users.schema.createIfNotExists)
+
 }

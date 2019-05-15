@@ -8,11 +8,14 @@ import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponent
 import services.authentication.AuthenticationService
 import services.user.UserService
 import web.actions.user.UserAction
-import web.requests.{CreateUserRequest, EmailVerificationRequest, RequestParser, UserLoginRequest}
-import web.requests.CreateUserRequest.createUserRequestValidator
-import web.requests.UserLoginRequest.userLoginRequestValidator
+import web.requests.RequestParser
+import web.requests.models.CreateUserRequest.createUserRequestValidator
+import web.requests.models.ForgotPasswordRequest.forgotPasswordRequestValidator
+import web.requests.models.ResetPasswordRequest.resetPasswordRequestValidator
+import web.requests.models.UserLoginRequest.userLoginRequestValidator
+import web.requests.models._
 import web.responses.ResponseCreator
-import web.responses.models.{SessionTokenResponse, UsernameResponse}
+import web.responses.models.{ForgotPasswordResponse, SessionTokenResponse, UsernameResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -58,10 +61,35 @@ class UserController @Inject()(userService: UserService, authenticationService: 
         request =>
           ResponseCreator.create(Ok) {
             for {
-              emailVerificationRequest <- Future.fromTry(RequestParser.parse[EmailVerificationRequest](request))
-              user <- userService.verifyEmail(userId, emailVerificationRequest.verificationToken)
+              EmailVerificationRequest(verificationToken) <- Future.fromTry(RequestParser.parse[EmailVerificationRequest](request))
+              user <- userService.verifyEmail(userId, verificationToken)
             }
             yield user
           }
   }
+
+  def forgotPassword(): Action[JsValue] =
+    Action.async(parse.json) {
+      request =>
+        ResponseCreator.create(Created) {
+          for {
+            ForgotPasswordRequest(email) <- Future.fromTry(RequestParser.parse[ForgotPasswordRequest](request))
+            userId <- authenticationService.forgotPassword(email)
+          }
+          yield ForgotPasswordResponse(userId, email)
+        }
+    }
+
+  def resetPassword(userId: UUID): Action[JsValue] =
+    userAction.forId(userId)
+      .async(parse.json) {
+        request =>
+          ResponseCreator.create(Ok) {
+            for {
+              resetPasswordRequest <- Future.fromTry(RequestParser.parse[ResetPasswordRequest](request))
+              user <- authenticationService.resetPassword(userId, resetPasswordRequest)
+            }
+            yield user
+          }
+      }
 }

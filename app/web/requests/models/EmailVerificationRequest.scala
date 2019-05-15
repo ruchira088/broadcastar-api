@@ -1,4 +1,4 @@
-package web.requests
+package web.requests.models
 
 import java.util.UUID
 
