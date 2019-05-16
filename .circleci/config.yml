@@ -4,6 +4,8 @@ jobs:
   compile_and_test:
     docker:
       - image: openjdk:8-jdk
+    environment:
+      AWS_REGION: ap-southeast-2
     steps:
       - run:
           name: Install sbt
