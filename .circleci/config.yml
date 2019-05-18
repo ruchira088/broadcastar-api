@@ -18,9 +18,9 @@ jobs:
             apt-get update && \
             apt-get install sbt -y
       - checkout
-      - restore-cache:
+      - restore_cache:
           keys:
-            - sbt-cache-{{ checksum "project/build.properties" }}-{{ checksum "project/Dependencies.scala" }}-{{ checksum "project/plugins.sbt" }}
+            - sbt-cache-{{ checksum "project/build.properties" }}-{{ checksum "project/plugins.sbt" }}-{{ checksum "project/Dependencies.scala" }}
             - sbt-cache
       - run:
           name: Fetch dependencies
@@ -32,7 +32,7 @@ jobs:
           name: Run unit tests
           command: sbt test
       - save_cache:
-          key: sbt-cache-{{ checksum "project/build.properties" }}-{{ checksum "project/Dependencies.scala" }}-{{ checksum "project/plugins.sbt" }}
+          key: sbt-cache-{{ checksum "project/build.properties" }}-{{ checksum "project/plugins.sbt" }}-{{ checksum "project/Dependencies.scala" }}
           paths:
             - ~/.sbt
             - ~/.ivy2
