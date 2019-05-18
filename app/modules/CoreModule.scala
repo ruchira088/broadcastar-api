@@ -33,7 +33,6 @@ class CoreModule extends AbstractModule {
     bind(classOf[StorageService]).to(classOf[StorageServiceImpl])
     bind(classOf[LocalFileStoreConfiguration]).toInstance(LocalFileStoreConfiguration(Paths.get("./file-storage")))
     bind(classOf[S3Configuration]).toInstance(S3Configuration("chirper-api-resources"))
-    bind(classOf[S3AsyncClient]).toInstance(S3AsyncClient.create())
     bind(classOf[AuthenticationConfiguration]).toInstance(AuthenticationConfiguration(10 minutes, 10 minutes))
     bind(classOf[AuthenticationService]).to(classOf[AuthenticationServiceImpl])
     bind(classOf[FileStore]).to(classOf[LocalFileStore])
@@ -69,6 +68,10 @@ class CoreModule extends AbstractModule {
   @Provides
   def passwordResetToken(slickResetPasswordTokenDao: SlickResetPasswordTokenDao)(implicit executionContext: ExecutionContext): ResetPasswordTokenDao =
     await(slickResetPasswordTokenDao.initialize().map(_ => slickResetPasswordTokenDao))
+
+  @Singleton
+  @Provides
+  def s3AsyncClient(): S3AsyncClient = S3AsyncClient.create()
 }
 
 object CoreModule {
