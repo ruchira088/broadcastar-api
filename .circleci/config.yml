@@ -125,6 +125,11 @@ jobs:
     docker:
       - image: ubuntu
     steps:
+      - run:
+          name: Install Git and CA-certificates
+          command: |
+            apt-get update && \
+            apt-get install git apt-transport-https bc ca-certificates software-properties-common -y
       - checkout
       - attach_workspace:
           at: .
@@ -146,5 +151,6 @@ workflows:
           requires:
             - compile_and_test
       - deploy_api:
+          context: aws-credentials
           requires:
             - push_docker_image
