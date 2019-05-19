@@ -78,7 +78,7 @@ jobs:
       - run:
           name: Create Terraform resources
           command: |
-            terrform init deploy/terraform/
+            terraform init deploy/terraform/
             terraform apply -auto-approve deploy/terraform/
       - run:
           name: Login to ECR
