@@ -2,12 +2,12 @@ alias:
   - &install-sbt
     name: Install sbt
     command: |
-      apt-get update && \
+      apt-get update &&
       apt-get install apt-transport-https bc ca-certificates software-properties-common -y
 
-      echo "deb https://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list && \
-      apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 && \
-      apt-get update && \
+      echo "deb https://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list &&
+      apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 &&
+      apt-get update &&
       apt-get install sbt -y
   - &restore-sbt-cache
     keys:
@@ -44,12 +44,27 @@ jobs:
       - image: openjdk:8-jdk
     steps:
       - run: *install-sbt
+      - setup_remote_docker:
+          version: 18.09.3
+      - run:
+          name: Install Docker client
+          command: |
+            apt update && apt install curl -y
+
+            curl -L -o /tmp/docker.tgz https://download.docker.com/linux/static/stable/x86_64/docker-18.09.6.tgz &&
+            tar -xv -C /tmp -f /tmp/docker.tgz &&
+            mv /tmp/docker/* /usr/local/bin
       - checkout
       - restore_cache: *restore-sbt-cache
       - run:
           name: Build application binary
           command: sbt dist
-
+      - run:
+          name: Build production Docker image
+          command: docker build -t chirper-api -f Dockerfile-prod .
+      - run:
+          name: Check whether the Docker image was build
+          command: docker images
 
 workflows:
   version: 2

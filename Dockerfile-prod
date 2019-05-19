@@ -1,0 +1,23 @@
+FROM ubuntu as builder
+
+WORKDIR /opt
+
+RUN apt update && \
+    apt install unzip -y
+
+COPY target/universal .
+
+RUN unzip chirper-api-*.zip -d build && \
+    mv build/chirper-api* chirper-api
+
+FROM openjdk:8-jdk-slim
+
+WORKDIR /opt/chirper-api
+
+COPY --from=builder /opt/chirper-api .
+
+EXPOSE 9000
+
+ENTRYPOINT ["bash"]
+
+CMD ["/opt/chirper-api/bin/chirper-api"]

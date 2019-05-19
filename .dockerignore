@@ -1,5 +1,4 @@
 logs
-target
 /.sqlite/chirper.db
 /.idea
 /.idea_modules

@@ -17,9 +17,9 @@ lazy val root =
       javaOptions in Test += "-Dconfig.file=conf/application.test.conf"
     )
 
-lazy val rootDependencies = Seq(guice, scalaz, jodaTime, playSlick, postgresql, sqlite, jbcrypt, commonsValidator, s3)
+lazy val rootDependencies = Seq(guice, scalaz, jodaTime, playSlick, postgresql, sqlite, h2, jbcrypt, commonsValidator, s3)
 
-lazy val rootTestDependencies = Seq(scalaTestPlusPlay, h2, pegdown, faker)
+lazy val rootTestDependencies = Seq(scalaTestPlusPlay, pegdown, faker)
 
 addCommandAlias("runWithPostgresql", "run -Dconfig.file=conf/application.postgresql.conf")
 addCommandAlias("runWithSqlite", "run -Dconfig.file=conf/application.sqlite.conf")
