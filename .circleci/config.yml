@@ -13,6 +13,15 @@ alias:
     keys:
       - sbt-cache-{{ checksum "project/build.properties" }}-{{ checksum "project/plugins.sbt" }}-{{ checksum "project/Dependencies.scala" }}
       - sbt-cache
+  - &install-terraform
+    name: Install Terraform
+    command: |
+      apt update && apt install unzip curl -y
+
+      curl -L -o /tmp/terraform.zip https://releases.hashicorp.com/terraform/0.11.14/terraform_0.11.14_linux_amd64.zip && \
+      unzip -d /tmp /tmp/terraform.zip && \
+      chmod +x /tmp/terraform && \
+      mv /tmp/terraform /usr/local/bin
 
 version: 2
 
@@ -21,15 +30,7 @@ jobs:
     docker:
       - image: ubuntu
     steps:
-      - run:
-          name: Install Terraform
-          command: |
-            apt update && apt install unzip curl -y
-
-            curl -L -o /tmp/terraform.zip https://releases.hashicorp.com/terraform/0.11.14/terraform_0.11.14_linux_amd64.zip && \
-            unzip -d /tmp /tmp/terraform.zip && \
-            chmod +x /tmp/terraform && \
-            mv /tmp/terraform /usr/local/bin
+      - run: *install-terraform
       - checkout
       - run:
           name: Create AWS resources
@@ -81,6 +82,7 @@ jobs:
 
             pip install awscli --upgrade --user && \
             ln -sf $HOME/.local/bin/aws /usr/local/bin
+      - run: *install-terraform
       - run:
           name: Install jq
           command: apt update && apt install jq -y
