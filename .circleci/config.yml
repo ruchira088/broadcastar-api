@@ -103,11 +103,11 @@ jobs:
             cd deploy/terraform && terraform init && cd ../..
 
             ecr=`cd deploy/terraform && terraform output -json | jq .chirper_api_ecr.value | tr -d '"' && cd ../..`
-            git_tag=`git rev-parse HEAD | cut -c 1-8`
+            git_commit=`git rev-parse HEAD | cut -c 1-8`
             git_branch=`git rev-parse --abbrev-ref HEAD | tr [:upper:] [:lower:] | tr ' ' '-'`
             build_timestamp=`date +%F-%T | tr ':' '-'`
 
-            tags=($git_tag $git_branch-$CIRCLE_BUILD_NUM $build_timestamp-$git_branch)
+            tags=($git_commit $git_branch-$CIRCLE_BUILD_NUM $build_timestamp-$git_branch)
 
             for tag in "${tags[@]}"
             do
@@ -116,10 +116,16 @@ jobs:
             done
 
             echo "dockerImage: $ecr:$git_branch-$CIRCLE_BUILD_NUM" >> data.yml
+            echo "branch: $git_branch" >> data.yml
+
+            echo "branch: $git_branch" >> config-values.yml
+            echo "commit: $git_commit" >> config-values.yml
+            echo "buildTimestamp: $build_timestamp" >> config-values.yml
       - persist_to_workspace:
           root: .
           paths:
             - data.yml
+            - config-values.yml
 
   deploy_api:
     docker:
@@ -168,8 +174,14 @@ jobs:
       - attach_workspace:
           at: .
       - run:
+          name: Create K8s resource files
+          command: |
+            mkdir k8s-files
+
+            yq r -j data.yml | mustache - deploy/k8s/deployment.yml > k8s-files/deployment.yml
+      - run:
           name: Verify
-          command: yq r -j data.yml
+          command: cat k8s-files/deployment.yml
 
 workflows:
   version: 2
