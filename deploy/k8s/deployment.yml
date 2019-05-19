@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: chirper
+  name: chiper-api-{{ branch }}-deployment
+spec:
+  selector:
+    matchLabels:
+      app: chirper-api-{{ branch }}
+  replicas: 1
+  template:
+    metadata:
+      namespace: chirper
+      name: chirper-api-{{ branch }}
+    spec:
+      containers:
+        - name: chirper-api-{{ branch }}
+          image: {{ dockerImage }}
+          ports:
+            - containerPort: 9000
+

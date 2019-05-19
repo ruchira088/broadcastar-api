@@ -17,6 +17,26 @@ alias:
 version: 2
 
 jobs:
+  create_aws_resources:
+    docker:
+      - image: ubuntu
+    steps:
+      - run:
+          name: Install Terraform
+          command: |
+            apt update && apt install unzip curl -y
+
+            curl -L -o /tmp/terraform.zip https://releases.hashicorp.com/terraform/0.11.14/terraform_0.11.14_linux_amd64.zip && \
+            unzip -d /tmp /tmp/terraform.zip && \
+            chmod +x /tmp/terraform && \
+            mv /tmp/terraform /usr/local/bin
+      - checkout
+      - run:
+          name: Create AWS resources
+          command: |
+            terraform init deploy/terraform/
+            terraform apply -auto-approve deploy/terraform/
+
   compile_and_test:
     docker:
       - image: openjdk:8-jdk
@@ -55,15 +75,6 @@ jobs:
             tar -xv -C /tmp -f /tmp/docker.tgz && \
             mv /tmp/docker/* /usr/local/bin
       - run:
-          name: Install Terraform
-          command: |
-            apt update && apt install unzip curl -y
-
-            curl -L -o /tmp/terraform.zip https://releases.hashicorp.com/terraform/0.11.14/terraform_0.11.14_linux_amd64.zip && \
-            unzip -d /tmp /tmp/terraform.zip && \
-            chmod +x /tmp/terraform && \
-            mv /tmp/terraform /usr/local/bin
-      - run:
           name: Install AWS CLI
           command: |
             apt install python-pip python-dev build-essential -y
@@ -75,11 +86,6 @@ jobs:
           command: apt update && apt install jq -y
       - checkout
       - restore_cache: *restore-sbt-cache
-      - run:
-          name: Create Terraform resources
-          command: |
-            terraform init deploy/terraform/
-            terraform apply -auto-approve deploy/terraform/
       - run:
           name: Login to ECR
           command: aws ecr get-login --no-include-email --region ap-southeast-2 | bash
@@ -107,11 +113,36 @@ jobs:
               docker push "$ecr:$tag"
             done
 
+            echo "$ecr:$git_branch-$CIRCLE_BUILD_NUM" >> docker-image.txt
+      - persist_to_workspace:
+          root: .
+          paths:
+            - docker-image.txt
+
+  deploy_api:
+    docker:
+      - image: ubuntu
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Verify
+          command: cat docker-image.txt
+
 workflows:
   version: 2
   deploy:
     jobs:
-      - compile_and_test
+      - create_aws_resources:
+          context: aws-credentials
+      - compile_and_test:
+          requires:
+            - create_aws_resources
       - push_docker_image:
+          context: aws-credentials
           requires:
             - compile_and_test
+      - deploy_api:
+          requires:
+            - push_docker_image
