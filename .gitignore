@@ -9,3 +9,4 @@ target
 /RUNNING_PID
 .DS_Store
 /file-storage/*
+.terraform
