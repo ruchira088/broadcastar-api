@@ -92,7 +92,9 @@ jobs:
       - run:
           name: Push Docker images to ECR
           command: |
-            ecr=`cd deploy/terraform && terraform init && terraform output -json | jq .chirper_api_ecr.value | tr -d '"' && cd ../..`
+            cd deploy/terraform && terraform init && cd ../..
+
+            ecr=`cd deploy/terraform && terraform output -json | jq .chirper_api_ecr.value | tr -d '"' && cd ../..`
             git_tag=`git rev-parse HEAD | cut -c 1-8`
             git_branch=`git rev-parse --abbrev-ref HEAD | tr [:upper:] [:lower:] | tr ' ' '-'`
             build_timestamp=`date +%F-%T | tr ':' '-'`
@@ -101,8 +103,8 @@ jobs:
 
             for tag in "${tags[@]}"
             do
-              docker tag chirper-api:latest $ecr:$tag
-              docker push $ecr:$tag
+              docker tag chirper-api:latest "$ecr:$tag"
+              docker push "$ecr:$tag"
             done
 
 workflows:
