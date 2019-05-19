@@ -174,7 +174,7 @@ jobs:
       - attach_workspace:
           at: .
       - run:
-          name: Create K8s resource files
+          name: Rendering K8s resource files
           command: |
             mkdir k8s-files
 
