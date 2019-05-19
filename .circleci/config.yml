@@ -61,6 +61,7 @@ jobs:
 
             curl -L -o /tmp/terraform.zip https://releases.hashicorp.com/terraform/0.11.14/terraform_0.11.14_linux_amd64.zip && \
             unzip -d /tmp /tmp/terraform.zip && \
+            chmod +x /tmp/terraform && \
             mv /tmp/terraform /usr/local/bin
       - run:
           name: Install AWS CLI
