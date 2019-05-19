@@ -65,7 +65,7 @@ jobs:
       - run:
           name: Install AWS CLI
           command: |
-            sudo apt install python-pip python-dev build-essential -y
+            apt install python-pip python-dev build-essential -y
 
             pip install awscli --upgrade --user && \
             ln -sf $HOME/.local/bin/aws /usr/local/bin
