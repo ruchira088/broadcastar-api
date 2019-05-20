@@ -4,6 +4,6 @@ metadata:
   namespace: chirper
   name: chirper-api-{{{ branch }}}-config-map
 data:
-  EXAMPLE_VALUE: "hello world"
+  ALLOWED_HOSTS: "."
 
 
