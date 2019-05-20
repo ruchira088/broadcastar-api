@@ -190,6 +190,9 @@ jobs:
               yq r -j data.yml | mustache - deploy/k8s/$resource_file.yml > k8s-resources/$resource_file.yml
             done
       - run:
+          name: Creating the namespace
+          command: kubectl apply -f k8s-resources/namespace.yml
+      - run:
           name: Deploy to K8s cluster
           command: kubectl apply -f k8s-resources/
 
