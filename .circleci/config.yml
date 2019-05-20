@@ -174,6 +174,11 @@ jobs:
       - attach_workspace:
           at: .
       - run:
+          name: Fetch the kubectl config
+          command: kops export kubecfg k8s.ruchij.com
+          environment:
+            KOPS_STATE_STORE: s3://kops.ruchij.com
+      - run:
           name: Rendering K8s resource files
           command: |
             mkdir k8s-files
@@ -181,7 +186,8 @@ jobs:
             yq r -j data.yml | mustache - deploy/k8s/deployment.yml > k8s-files/deployment.yml
       - run:
           name: Verify
-          command: cat k8s-files/deployment.yml
+          command: |
+            cat ~/.kube/config
 
 workflows:
   version: 2
