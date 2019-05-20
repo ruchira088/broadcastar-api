@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: chirper
+  name: chirper-api-{{{ branch }}}-service
+spec:
+  selector:
+    app: chirper-api-{{{ branch }}}
+  ports:
+    - port: 9000

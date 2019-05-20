@@ -1,0 +1,15 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  namespace: chirper
+  name: chirper-api-{{{ branch }}}-ingress
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: {{{ branch }}}.chirper-api.ruchij.com
+      http:
+        paths:
+          - backend:
+              serviceName: chirper-api-{{{ branch }}}-service
+              servicePort: 9000

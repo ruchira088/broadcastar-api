@@ -181,13 +181,17 @@ jobs:
       - run:
           name: Rendering K8s resource files
           command: |
-            mkdir k8s-files
+            mkdir k8s-resources
 
-            yq r -j data.yml | mustache - deploy/k8s/deployment.yml > k8s-files/deployment.yml
+            resource_files=("deployment" "namespace" "service" "ingress" "service")
+
+            for resource_file in "${resource_files[@]}"
+            do
+              yq r -j data.yml | mustache - deploy/k8s/$resource_file.yml > k8s-resources/$resource_file.yml
+            done
       - run:
-          name: Verify
-          command: |
-            cat ~/.kube/config
+          name: Deploy to K8s cluster
+          command: kubectl apply -f k8s-resources/
 
 workflows:
   version: 2
