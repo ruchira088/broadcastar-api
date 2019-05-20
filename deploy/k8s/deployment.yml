@@ -20,5 +20,11 @@ spec:
             - containerPort: 9000
           envFrom:
             - configMapRef:
-                name: chirper-api-{{{ branch }}-config-map
+                name: chirper-api-{{{ branch }}}-config-map
+          livenessProbe:
+            httpGet:
+              port: 9000
+              path: /health
+            initialDelaySeconds: 15
+            periodSeconds: 5
 
