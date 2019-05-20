@@ -115,12 +115,16 @@ jobs:
               docker push "$ecr:$tag"
             done
 
-            echo "dockerImage: $ecr:$git_branch-$CIRCLE_BUILD_NUM" >> data.yml
-            echo "branch: $git_branch" >> data.yml
+            cat > data.yml << EOF
+              dockerImage: $ecr:$git_branch-$CIRCLE_BUILD_NUM
+              branch: $git_branch
+            EOF
 
-            echo "branch: $git_branch" >> config-values.yml
-            echo "commit: $git_commit" >> config-values.yml
-            echo "buildTimestamp: $build_timestamp" >> config-values.yml
+            cat > config-values.yml << EOF
+              branch: $git_branch
+              commit: $git_commit
+              buildTimestamp: $build_timestamp
+            EOF
       - persist_to_workspace:
           root: .
           paths:
@@ -183,15 +187,18 @@ jobs:
           command: |
             mkdir k8s-resources
 
-            resource_files=("deployment" "namespace" "service" "ingress" "service")
+            resource_files=("deployment" "namespace" "service" "ingress" "service" "config-map")
 
             for resource_file in "${resource_files[@]}"
             do
               yq r -j data.yml | mustache - deploy/k8s/$resource_file.yml > k8s-resources/$resource_file.yml
             done
       - run:
-          name: Creating the namespace
+          name: Creating the Namespace
           command: kubectl apply -f k8s-resources/namespace.yml
+      - run:
+          name: Create the Config Map
+          command: kubectl apply -f k8s-resources/config-map.yml
       - run:
           name: Deploy to K8s cluster
           command: kubectl apply -f k8s-resources/

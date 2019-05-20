@@ -1,5 +1,5 @@
 logs
-/.sqlite/chirper.db
+/.chirper.db
 /.idea
 /.idea_modules
 /.classpath
