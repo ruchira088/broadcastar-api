@@ -6,6 +6,10 @@ metadata:
   annotations:
     ingress.kubernetes.io/rewrite-target: /
 spec:
+  tls:
+    - secretName: {{{ branch }}}-chirper-api-tls
+      hosts:
+        - {{{ branch }}}.chirper-api.ruchij.com
   rules:
     - host: {{{ branch }}}.chirper-api.ruchij.com
       http:

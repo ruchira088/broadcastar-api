@@ -1,0 +1,17 @@
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: chirper-api-{{{ branch }}}-tls-certificate
+  namespace: chirper
+spec:
+  secretName: {{{ branch }}}-chirper-api-tls
+  issuerRef:
+    name: lets-encrypt
+  dnsNames:
+    - {{{ branch }}}.chirper-api.ruchij.com
+  acme:
+    config:
+      - dns01:
+          provider: route53-dns
+        domains:
+          - {{{ branch }}}.chirper-api.ruchij.com

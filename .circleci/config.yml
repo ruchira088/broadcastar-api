@@ -103,7 +103,7 @@ jobs:
             cd deploy/terraform && terraform init && cd ../..
 
             ecr=`cd deploy/terraform && terraform output -json | jq .chirper_api_ecr.value | tr -d '"' && cd ../..`
-            git_commit=`git rev-parse HEAD | cut -c 1-8`
+            git_commit=`git rev-parse --short HEAD`
             git_branch=`git rev-parse --abbrev-ref HEAD | tr [:upper:] [:lower:] | tr ' ' '-'`
             build_timestamp=`date +%F-%T | tr ':' '-'`
 
@@ -187,7 +187,7 @@ jobs:
           command: |
             mkdir k8s-resources
 
-            resource_files=("deployment" "namespace" "service" "ingress" "service" "config-map")
+            resource_files=("deployment" "namespace" "service" "ingress" "service" "config-map" "certificate")
 
             for resource_file in "${resource_files[@]}"
             do
