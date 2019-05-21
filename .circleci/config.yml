@@ -105,9 +105,9 @@ jobs:
       - run:
           name: Push Docker images to ECR
           command: |
-            cd deploy/terraform && terraform init && cd ../..
+            cd deploy/terraform/common && terraform init && cd ../../../
 
-            ecr=`cd deploy/terraform && terraform output -json | jq .chirper_api_ecr.value | tr -d '"' && cd ../..`
+            ecr=`cd deploy/terraform/common && terraform output -json | jq .chirper_api_ecr.value | tr -d '"' && cd ../../../`
             git_commit=`git rev-parse --short HEAD`
             git_branch=`git rev-parse --abbrev-ref HEAD | tr [:upper:] [:lower:] | tr ' ' '-'`
             build_timestamp=`date +%F-%T | tr ':' '-'`
