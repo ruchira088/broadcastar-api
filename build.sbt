@@ -11,7 +11,7 @@ lazy val root =
       scalaVersion := SCALA_VERSION,
       scalacOptions ++= Seq("-feature"),
       buildInfoKeys := BuildInfoKey.ofN(name, organization, version, scalaVersion, sbtVersion),
-      buildInfoPackage := "com.eed3si9n.ruchij",
+      buildInfoPackage := "info",
       libraryDependencies ++= rootDependencies ++ rootTestDependencies.map(_ % Test),
       testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-h", "target/test-results/unit-tests"),
       javaOptions in Test += "-Dconfig.file=conf/application.test.conf"

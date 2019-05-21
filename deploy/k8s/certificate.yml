@@ -7,6 +7,7 @@ spec:
   secretName: {{{ branch }}}-chirper-api-tls
   issuerRef:
     name: lets-encrypt
+    kind: ClusterIssuer
   dnsNames:
     - {{{ branch }}}.chirper-api.ruchij.com
   acme:

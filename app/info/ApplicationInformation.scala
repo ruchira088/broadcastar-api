@@ -1,0 +1,5 @@
+package info
+
+class ApplicationInformation {
+
+}
