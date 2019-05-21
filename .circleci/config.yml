@@ -2,12 +2,12 @@ alias:
   - &install-sbt
     name: Install sbt
     command: |
-      apt-get update &&
+      apt-get update && \
       apt-get install apt-transport-https bc ca-certificates software-properties-common -y
 
-      echo "deb https://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list &&
-      apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 &&
-      apt-get update &&
+      echo "deb https://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list && \
+      apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 && \
+      apt-get update && \
       apt-get install sbt -y
   - &restore-sbt-cache
     keys:
@@ -16,7 +16,8 @@ alias:
   - &install-terraform
     name: Install Terraform
     command: |
-      apt update && apt install unzip curl -y
+      apt update && \
+      apt install unzip curl -y
 
       curl -L -o /tmp/terraform.zip https://releases.hashicorp.com/terraform/0.11.14/terraform_0.11.14_linux_amd64.zip && \
       unzip -d /tmp /tmp/terraform.zip && \
@@ -70,7 +71,8 @@ jobs:
       - run:
           name: Install Docker client
           command: |
-            apt update && apt install curl -y
+            apt update && \
+            apt install curl -y
 
             curl -L -o /tmp/docker.tgz https://download.docker.com/linux/static/stable/x86_64/docker-18.09.6.tgz && \
             tar -xv -C /tmp -f /tmp/docker.tgz && \
@@ -78,6 +80,7 @@ jobs:
       - run:
           name: Install AWS CLI
           command: |
+            apt update && \
             apt install python-pip python-dev build-essential -y
 
             pip install awscli --upgrade --user && \
@@ -85,7 +88,9 @@ jobs:
       - run: *install-terraform
       - run:
           name: Install jq
-          command: apt update && apt install jq -y
+          command: |
+            apt update && \
+            apt install jq -y
       - checkout
       - restore_cache: *restore-sbt-cache
       - run:
@@ -143,7 +148,8 @@ jobs:
       - run:
           name: Install kubectl
           command: |
-            apt-get update && apt-get install curl gnupg2 apt-transport-https -y
+            apt-get update && \
+            apt-get install curl gnupg2 apt-transport-https -y
 
             curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
             echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list && \
@@ -152,7 +158,8 @@ jobs:
       - run:
           name: Install kops
           command: |
-            apt update && apt install curl -y
+            apt update && \
+            apt install curl -y
 
             curl -LO https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64 && \
             chmod +x kops-linux-amd64 && \
@@ -160,16 +167,17 @@ jobs:
       - run:
           name: Install Mustache templating engine
           command: |
-            apt update && apt install curl -y
+            apt update && \
+            apt install curl -y
 
             curl -sL https://deb.nodesource.com/setup_12.x | bash && \
-            apt-get install -y nodejs
-
+            apt-get install -y nodejs && \
             npm install -g mustache
       - run:
           name: Install yq
           command: |
-            apt update && apt install software-properties-common -y
+            apt update && \
+            apt install software-properties-common -y
 
             add-apt-repository ppa:rmescandon/yq -y && \
             apt update && \
