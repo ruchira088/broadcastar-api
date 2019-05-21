@@ -191,7 +191,7 @@ jobs:
           environment:
             KOPS_STATE_STORE: s3://kops.ruchij.com
       - run:
-          name: Rendering K8s resource files
+          name: Render K8s resource files
           command: |
             mkdir k8s-resources
 
@@ -202,10 +202,10 @@ jobs:
               yq r -j data.yml | mustache - deploy/k8s/$resource_file.yml > k8s-resources/$resource_file.yml
             done
       - run:
-          name: Creating the Namespace
+          name: Create K8s Namespace
           command: kubectl apply -f k8s-resources/namespace.yml
       - run:
-          name: Create the Config Map
+          name: Create K8s Config Map
           command: kubectl apply -f k8s-resources/config-map.yml
       - run:
           name: Deploy to K8s cluster
