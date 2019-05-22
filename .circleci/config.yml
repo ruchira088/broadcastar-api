@@ -120,9 +120,11 @@ jobs:
               docker push "$ecr:$tag"
             done
 
-            cat > data.yml << EOF
-              dockerImage: $ecr:$git_branch-$CIRCLE_BUILD_NUM
-              branch: $git_branch
+            cat > data.json << EOF
+              {
+                "dockerImage": "$ecr:$git_branch-$CIRCLE_BUILD_NUM",
+                "branch": "$git_branch"
+              }
             EOF
 
             cat > config-values.yml << EOF
@@ -133,7 +135,7 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - data.yml
+            - data.json
             - config-values.yml
 
   deploy_api:
@@ -173,15 +175,6 @@ jobs:
             curl -sL https://deb.nodesource.com/setup_12.x | bash && \
             apt-get install -y nodejs && \
             npm install -g mustache
-      - run:
-          name: Install yq
-          command: |
-            apt update && \
-            apt install software-properties-common -y
-
-            add-apt-repository ppa:rmescandon/yq -y && \
-            apt update && \
-            apt install yq -y
       - checkout
       - attach_workspace:
           at: .
@@ -195,9 +188,9 @@ jobs:
           command: |
             mkdir k8s-resources
 
-            for resource_file in `ls deploy/k8s`
+            for resource_file in `ls deploy/k8s/*`
             do
-              yq r -j data.yml | mustache - $resource_file > k8s-resources/`basename $resource_file`
+              cat data.json | mustache - $resource_file > k8s-resources/`basename $resource_file`
             done
       - run:
           name: Create K8s Namespace
