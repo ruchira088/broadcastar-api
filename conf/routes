@@ -2,6 +2,8 @@ GET     /health                     web.controllers.HomeController.healthCheck()
 
 GET     /username/:username         web.controllers.UserController.usernameExists(username)
 
+GET     /user                       web.controllers.UserController.authenticatedUser()
+
 POST    /user                       web.controllers.UserController.createUser()
 
 POST    /password/reset-token       web.controllers.UserController.forgotPassword()

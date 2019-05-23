@@ -17,7 +17,7 @@ class UserAction @Inject()(parser: BodyParsers.Default, userService: UserService
 
   def forId(userId: UUID): ActionBuilder[Request, AnyContent] = new ActionBuilderImpl(parser) {
     override def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] =
-      recoverWith[Future, Result, Throwable](ResponseCreator.exceptionMapper) {
+      recoverWith(ResponseCreator.exceptionMapper) {
         for {
           user <- userService.getUserById(userId)
           result <- block(UserRequest(user, request))

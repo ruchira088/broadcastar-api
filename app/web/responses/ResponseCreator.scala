@@ -1,7 +1,7 @@
 package web.responses
 
 import exceptions.aggregation.{AggregatedExistingResourceException, AggregatedValidationException}
-import exceptions.{ExistingEmailException, ExistingUsernameException, ResourceNotFoundException}
+import exceptions.{ExistingEmailException, ExistingUsernameException, InvalidCredentialsException, ResourceNotFoundException}
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc.{Result, Results}
 import play.api.mvc.Results._
@@ -30,6 +30,8 @@ object ResponseCreator {
 
     case AggregatedExistingResourceException(existingResourceExceptions) =>
       Conflict { Json.toJsObject(ExceptionResponse(existingResourceExceptions)) }
+
+    case InvalidCredentialsException => Unauthorized(errorResponse(InvalidCredentialsException))
 
     case throwable => InternalServerError(errorResponse(throwable))
   }

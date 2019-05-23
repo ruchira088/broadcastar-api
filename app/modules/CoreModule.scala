@@ -2,7 +2,7 @@ package modules
 
 import java.nio.file.Paths
 
-import com.google.inject.{AbstractModule, Provides, Singleton}
+import com.google.inject.{AbstractModule, Provides, Singleton, TypeLiteral}
 import config.{AuthenticationConfiguration, LocalFileStoreConfiguration, S3Configuration}
 import dao.authentication.{AuthenticationTokenDao, SlickAuthenticationTokenDao}
 import dao.reset.{ResetPasswordTokenDao, SlickResetPasswordTokenDao}
@@ -18,6 +18,7 @@ import services.storage.{StorageService, StorageServiceImpl}
 import services.user.{UserService, UserServiceImpl}
 import software.amazon.awssdk.services.s3.S3AsyncClient
 import utils.SystemUtilities
+import web.actions.authenticated.SessionTokenExtractor
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -36,6 +37,8 @@ class CoreModule extends AbstractModule {
     bind(classOf[AuthenticationConfiguration]).toInstance(AuthenticationConfiguration(10 minutes, 10 minutes))
     bind(classOf[AuthenticationService]).to(classOf[AuthenticationServiceImpl])
     bind(classOf[FileStore]).to(classOf[LocalFileStore])
+
+    bind(new TypeLiteral[SessionTokenExtractor[String]] {}).toInstance(SessionTokenExtractor)
   }
 
   @Singleton
