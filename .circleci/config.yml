@@ -197,7 +197,9 @@ jobs:
           command: kubectl apply -f k8s-resources/namespace.yml
       - run:
           name: Create K8s Config Map
-          command: kubectl apply -f k8s-resources/config-map.yml
+          command: |
+            cat config-values.yml >> k8s-resources/config-map.yml
+            kubectl apply -f k8s-resources/config-map.yml
       - run:
           name: Deploy to K8s cluster
           command: kubectl apply -f k8s-resources/
