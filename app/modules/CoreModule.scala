@@ -13,6 +13,9 @@ import ec.{BlockingExecutionContext, BlockingExecutionContextImpl}
 import modules.CoreModule.await
 import services.authentication.{AuthenticationService, AuthenticationServiceImpl}
 import services.crypto.{BCryptService, CryptographyService}
+import services.notification.NotificationService
+import services.notification.console.ConsoleNotificationService
+import services.notification.models.NotificationType
 import services.storage.store.{FileStore, LocalFileStore, S3FileStore}
 import services.storage.{StorageService, StorageServiceImpl}
 import services.user.{UserService, UserServiceImpl}
@@ -39,6 +42,7 @@ class CoreModule extends AbstractModule {
     bind(classOf[FileStore]).to(classOf[LocalFileStore])
 
     bind(new TypeLiteral[SessionTokenExtractor[String]] {}).toInstance(SessionTokenExtractor)
+    bind(new TypeLiteral[NotificationService[NotificationType.Console.type]] {}).to(classOf[ConsoleNotificationService])
   }
 
   @Singleton

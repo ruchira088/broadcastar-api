@@ -2,8 +2,6 @@ package services.user
 
 import java.util.UUID
 
-import dao.reset.ResetPasswordTokenDao
-import dao.reset.models.ResetPasswordToken
 import dao.user.DatabaseUserDao
 import dao.user.models.DatabaseUser
 import dao.verification.EmailVerificationTokenDao
@@ -13,6 +11,9 @@ import exceptions.aggregation.AggregatedExistingResourceException
 import javax.inject.{Inject, Singleton}
 import scalaz.std.scalaFuture.futureInstance
 import services.crypto.CryptographyService
+import services.notification.NotificationService
+import services.notification.models.NotificationType.Console
+import services.notification.console.models.ConsoleNotificationMessage._
 import services.user.models.User
 import utils.MonadicUtils.{OptionTWrapper, withDefault}
 import utils.{MonadicUtils, SystemUtilities}
@@ -24,6 +25,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class UserServiceImpl @Inject()(
   databaseUserDao: DatabaseUserDao,
   emailVerificationTokenDao: EmailVerificationTokenDao,
+  notificationService: NotificationService[Console.type],
   cryptographyService: CryptographyService
 )(implicit systemUtilities: SystemUtilities)
     extends UserService {
@@ -52,7 +54,7 @@ class UserServiceImpl @Inject()(
 
       persistedUser <- databaseUserDao.insert(DatabaseUser.from(createUserRequest, saltedHashedPassword))
 
-      _ <- emailVerificationTokenDao.insert(
+      emailVerificationToken <- emailVerificationTokenDao.insert(
         EmailVerificationToken(
           persistedUser.userId,
           systemUtilities.randomUuid(),
@@ -62,24 +64,24 @@ class UserServiceImpl @Inject()(
         )
       )
 
+      _ <- notificationService.send(emailVerificationToken)
+
     } yield DatabaseUser.toUser(persistedUser)
 
   override def usernameExists(username: String)(implicit executionContext: ExecutionContext): Future[Boolean] =
     databaseUserDao.getByUsername(username).nonEmpty
 
-  override def verifyEmail(userId: UUID, secret: UUID)(
-    implicit executionContext: ExecutionContext
-  ): Future[User] =
+  override def verifyEmail(userId: UUID, secret: UUID)(implicit executionContext: ExecutionContext): Future[User] =
     (emailVerificationTokenDao.verifyEmail(userId, secret) ifEmpty Future.failed(
       ResourceNotFoundException("Email verification token not found")
     )).flatMap { _ =>
-        withDefault(Future.failed(FatalDatabaseException)) {
-          for {
-            _ <- databaseUserDao.verifyEmail(userId)
-            databaseUser <- databaseUserDao.getByUserId(userId)
-          } yield DatabaseUser.toUser(databaseUser)
-        }
+      withDefault(Future.failed(FatalDatabaseException)) {
+        for {
+          _ <- databaseUserDao.verifyEmail(userId)
+          databaseUser <- databaseUserDao.getByUserId(userId)
+        } yield DatabaseUser.toUser(databaseUser)
       }
+    }
 
   override def getUserById(userId: UUID)(implicit executionContext: ExecutionContext): Future[User] =
     withDefault(Future.failed(ResourceNotFoundException(s"User not found (id = $userId)"))) {
