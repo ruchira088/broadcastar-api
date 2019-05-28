@@ -101,7 +101,13 @@ jobs:
           command: sbt dist
       - run:
           name: Build production Docker image
-          command: docker build -t chirper-api -f Dockerfile-prod .
+          command: |
+            docker build \
+              -t chirper-api \
+              --build-arg git_commit=`git rev-parse --short HEAD` \
+              --build-arg git_branch=`git rev-parse --abbrev-ref HEAD` \
+              --build-arg build_timestamp=`date --iso-8601=seconds` \
+              -f Dockerfile-prod .
       - run:
           name: Push Docker images to ECR
           command: |
@@ -128,9 +134,8 @@ jobs:
             EOF
 
             cat > config-values.yml << EOF
-              GIT_BRANCH: $git_branch
-              GIT_COMMIT: $git_commit
-              DOCKER_BUILD_TIMESTAMP: $build_timestamp
+              SAMPLE_KEY_1: SAMPLE_VALUE_1
+              SAMPLE_KEY_2: SAMPLE_VALUE_2
             EOF
       - persist_to_workspace:
           root: .
