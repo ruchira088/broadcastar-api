@@ -212,7 +212,10 @@ jobs:
           command: kubectl apply -f k8s-resources/
       - run:
           name: Wait for succesful deployment
-          command: kubectl rollout status deployment/chirper-api-`cat data.json | jq .branch | tr -d '"'`-deployment
+          command: |
+            kubectl rollout status \
+              deployment/chirper-api-`cat data.json | jq .branch | tr -d '"'`-deployment \
+              --namespace=chirper
 
 workflows:
   version: 2
