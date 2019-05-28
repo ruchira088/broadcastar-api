@@ -130,7 +130,7 @@ jobs:
             cat > config-values.yml << EOF
               GIT_BRANCH: $git_branch
               GIT_COMMIT: $git_commit
-              BUILD_TIMESTAMP: $build_timestamp
+              DOCKER_BUILD_TIMESTAMP: $build_timestamp
             EOF
       - persist_to_workspace:
           root: .

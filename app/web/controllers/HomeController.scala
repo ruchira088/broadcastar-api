@@ -1,5 +1,6 @@
 package web.controllers
 
+import config.ApplicationInformation
 import javax.inject._
 import play.api.libs.json.Json
 import play.api.mvc._
@@ -7,8 +8,10 @@ import utils.SystemUtilities
 import web.responses.models.HealthCheckResponse
 
 @Singleton
-class HomeController @Inject()(controllerComponents: ControllerComponents)(implicit systemUtilities: SystemUtilities)
-    extends AbstractController(controllerComponents) {
+class HomeController @Inject()(controllerComponents: ControllerComponents)(
+  implicit systemUtilities: SystemUtilities,
+  applicationInformation: ApplicationInformation
+) extends AbstractController(controllerComponents) {
 
   def healthCheck(): Action[AnyContent] =
     Action {

@@ -1,8 +1,11 @@
 package json
 
+import java.nio.file.Path
+
 import org.joda.time.DateTime
 import play.api.libs.json._
 
+import scala.concurrent.duration.FiniteDuration
 import scala.util.Try
 
 object JsonFormats {
@@ -17,4 +20,9 @@ object JsonFormats {
         case _ => JsError("must be a string")
       }
   }
+
+  implicit val finiteDurationWrites: Writes[FiniteDuration] =
+    (finiteDuration: FiniteDuration) => JsString(s"${finiteDuration.length} ${finiteDuration.unit.name()}")
+
+  implicit val pathWrites: Writes[Path] = (path: Path) => JsString(path.toAbsolutePath.toString)
 }

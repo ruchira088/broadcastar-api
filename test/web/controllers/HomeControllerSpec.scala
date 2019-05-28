@@ -2,6 +2,7 @@ package web.controllers
 
 import bindings.GuiceBinding._
 import bindings.GuiceUtils.application
+import config.ApplicationInformation
 import org.joda.time.DateTime
 import org.scalatestplus.play._
 import play.api.test.Helpers._
@@ -22,6 +23,8 @@ class HomeControllerSpec extends PlaySpec {
       }
 
       val app = application(classOf[SystemUtilities] -> systemUtilities)
+
+      implicit val applicationInformation: ApplicationInformation = app.injector.instanceOf[ApplicationInformation]
 
       val request = FakeRequest(GET, "/health")
       val home = route(app, request).value

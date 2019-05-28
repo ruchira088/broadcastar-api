@@ -2,6 +2,8 @@ import sbt._
 
 object Dependencies {
   val SCALA_VERSION = "2.12.8"
+  
+  lazy val scalaReflect = "org.scala-lang" % "scala-reflect" % SCALA_VERSION
 
   lazy val jodaTime = "joda-time" % "joda-time" % "2.10.2"
   
@@ -20,6 +22,8 @@ object Dependencies {
   lazy val commonsValidator = "commons-validator" % "commons-validator" % "1.6"
   
   lazy val s3 = "software.amazon.awssdk" % "s3" % "2.5.51"
+
+  lazy val typesafeConfig = "com.typesafe" % "config" % "1.3.4"
 
   lazy val scalaTestPlusPlay = "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.2"
   

@@ -1,9 +1,8 @@
 package modules
 
-import java.nio.file.Paths
-
 import com.google.inject.{AbstractModule, Provides, Singleton, TypeLiteral}
-import config.{AuthenticationConfiguration, LocalFileStoreConfiguration, S3Configuration}
+import com.typesafe.config.ConfigFactory
+import config.{ApplicationConfiguration, ApplicationInformation, AuthenticationConfiguration, LocalFileStoreConfiguration, S3Configuration}
 import dao.authentication.{AuthenticationTokenDao, SlickAuthenticationTokenDao}
 import dao.reset.{ResetPasswordTokenDao, SlickResetPasswordTokenDao}
 import dao.resource.{ResourceInformationDao, SlickResourceInformationDao}
@@ -11,12 +10,13 @@ import dao.user.{DatabaseUserDao, SlickDatabaseUserDao}
 import dao.verification.{EmailVerificationTokenDao, SlickEmailVerificationTokenDao}
 import ec.{BlockingExecutionContext, BlockingExecutionContextImpl}
 import modules.CoreModule.await
+import play.api.libs.json.Json
 import services.authentication.{AuthenticationService, AuthenticationServiceImpl}
 import services.crypto.{BCryptService, CryptographyService}
 import services.notification.NotificationService
 import services.notification.console.ConsoleNotificationService
 import services.notification.models.NotificationType
-import services.storage.store.{FileStore, LocalFileStore, S3FileStore}
+import services.storage.store.{FileStore, LocalFileStore}
 import services.storage.{StorageService, StorageServiceImpl}
 import services.user.{UserService, UserServiceImpl}
 import software.amazon.awssdk.services.s3.S3AsyncClient
@@ -30,14 +30,24 @@ import scala.language.postfixOps
 class CoreModule extends AbstractModule {
 
   override def configure(): Unit = {
+    val applicationConfiguration = ApplicationConfiguration.parse(ConfigFactory.load()).get
+
+    println {
+      Json.prettyPrint {
+        Json.toJson(applicationConfiguration)
+      }
+    }
+
+    bind(classOf[ApplicationInformation]).toInstance(applicationConfiguration.applicationInformation)
+    bind(classOf[AuthenticationConfiguration]).toInstance(applicationConfiguration.authenticationConfiguration)
+    bind(classOf[LocalFileStoreConfiguration]).toInstance(applicationConfiguration.localFileStoreConfiguration)
+    bind(classOf[S3Configuration]).toInstance(applicationConfiguration.s3Configuration)
+
     bind(classOf[SystemUtilities]).toInstance(SystemUtilities)
     bind(classOf[UserService]).to(classOf[UserServiceImpl])
     bind(classOf[CryptographyService]).to(classOf[BCryptService])
     bind(classOf[BlockingExecutionContext]).to(classOf[BlockingExecutionContextImpl])
     bind(classOf[StorageService]).to(classOf[StorageServiceImpl])
-    bind(classOf[LocalFileStoreConfiguration]).toInstance(LocalFileStoreConfiguration(Paths.get("./file-storage")))
-    bind(classOf[S3Configuration]).toInstance(S3Configuration("chirper-api-resources"))
-    bind(classOf[AuthenticationConfiguration]).toInstance(AuthenticationConfiguration(10 minutes, 10 minutes))
     bind(classOf[AuthenticationService]).to(classOf[AuthenticationServiceImpl])
     bind(classOf[FileStore]).to(classOf[LocalFileStore])
 
