@@ -34,7 +34,7 @@ alias:
 jobs:
   create_aws_resources:
     docker:
-      - image: ubuntu
+      - image: ubuntu:18.04
     steps:
       - run: *install-terraform
       - checkout
@@ -146,7 +146,7 @@ jobs:
 
   deploy_api:
     docker:
-      - image: ubuntu
+      - image: ubuntu:18.04
     steps:
       - run:
           name: Install Git and CA-certificates
