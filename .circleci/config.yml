@@ -50,6 +50,14 @@ alias:
       apt-get update && \
       apt-get install git apt-transport-https bc ca-certificates software-properties-common -y
 
+executors:
+  ubuntu:
+    docker:
+      - image: ubuntu:18.04
+  open-jdk:
+    docker:
+      - image: openjdk:8-jdk
+
 commands:
   create_aws_resources:
     parameters:
@@ -241,49 +249,53 @@ commands:
               --namespace=chirper-`cat << parameters.project_folder >>/data.json | jq .branch | tr -d '"'`
 
 jobs:
-  user_service_create_aws_resources:
-    docker:
-      - image: ubuntu:18.04
+  user_create_aws_resources:
+    executor: ubuntu
     steps:
       - create_aws_resources:
           project_folder: "user-service"
 
-  user_service_compile_and_test:
-    docker:
-      - image: openjdk:8-jdk
+  user_compile_and_test:
+    executor: open-jdk
     steps:
       - compile_and_test:
           sbt_project_name: "userService"
 
-  user_service_push_docker_image:
-    docker:
-      - image: openjdk:8-jdk
+  user_push_docker_image:
+    executor: open-jdk
     steps:
       - push_docker_image:
           sbt_project_name: "userService"
           project_folder: "user-service"
 
-  user_service_deploy:
-    docker:
-      - image: ubuntu:18.04
+  user_deploy:
+    executor: ubuntu
     steps:
       - deploy_service:
           project_folder: "user-service"
+
+  message_compile_and_test:
+    executor: open-jdk
+    steps:
+      - compile_and_test:
+          sbt_project_name: "messageService"
 
 workflows:
   version: 2
   user_service:
     jobs:
-      - user_service_create_aws_resources:
+      - user_create_aws_resources:
           context: aws-credentials
-      - user_service_compile_and_test:
-          requires:
-            - user_service_create_aws_resources
-      - user_service_push_docker_image:
+      - user_compile_and_test
+      - user_push_docker_image:
           context: aws-credentials
           requires:
-            - user_service_compile_and_test
-      - user_service_deploy:
+            - user_create_aws_resources
+            - user_compile_and_test
+      - user_deploy:
           context: aws-credentials
           requires:
-            - user_service_push_docker_image
+            - user_push_docker_image
+  message_service:
+    jobs:
+      - message_compile_and_test
