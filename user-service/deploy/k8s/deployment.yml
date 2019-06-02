@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: chirper-{{{ branch }}}
+  name: user-service-deployment
+spec:
+  selector:
+    matchLabels:
+      app: user-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      containers:
+        - name: user-service-container
+          image: {{{ dockerImage }}}
+          ports:
+            - containerPort: 9000
+          envFrom:
+            - configMapRef:
+                name: user-service-config-map
+          livenessProbe:
+            httpGet:
+              port: 9000
+              path: /health
+            initialDelaySeconds: 15
+            periodSeconds: 5
+

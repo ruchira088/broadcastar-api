@@ -1,8 +1,10 @@
 version: "3"
 
 services:
-  chirper-api:
-    build: .
+  user-service:
+    build:
+      dockerfile: user-service/Dockerfile
+      context: .
     tty: true
     command: "runWithPostgresql"
     ports:
@@ -12,12 +14,14 @@ services:
       - "~/.sbt:/root/.sbt"
       - "~/.ivy2:/root/.ivy2"
       - ".:/opt/chirper-api"
-      - "/opt/chirper-api/target"
       - "/opt/chirper-api/project/target"
+      - "/opt/chirper-api/user-service/target"
+      - "/opt/chirper-api/shared/target"
+      - "/opt/chirper-api/macros/target"
       - "/root/.sbt/1.0/plugins"
       - "~/.aws:/root/.aws"
     environment:
-      POSTGRESQL_URL: "jdbc:postgresql://postgresql-database:5432/chirper-api"
+      POSTGRESQL_URL: "jdbc:postgresql://postgresql-database:5432/user-service"
       POSTGRESQL_USER: "my-user"
       POSTGRESQL_PASSWORD: "password"
 
@@ -26,7 +30,7 @@ services:
     ports:
       - 5432:5432
     environment:
-      POSTGRES_DB: "chirper-api"
+      POSTGRES_DB: "user-service"
       POSTGRES_USER: "my-user"
       POSTGRES_PASSWORD: "password"
 

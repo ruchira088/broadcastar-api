@@ -1,6 +1,6 @@
 logs
 target
-/.chirper.db
+/.chirper-user.db
 /.idea
 /.idea_modules
 /.classpath

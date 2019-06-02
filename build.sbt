@@ -3,41 +3,73 @@ import Dependencies._
 inThisBuild {
   Seq(
     organization := "com.ruchij",
-    maintainer := "me@ruchij.com",
-    scalaVersion := SCALA_VERSION
+    scalaVersion := SCALA_VERSION,
+    scalacOptions += "-feature"
   )
 }
 
-lazy val root =
-  (project in file("."))
+lazy val userService =
+  (project in file("./user-service"))
     .enablePlugins(PlayScala, BuildInfoPlugin)
     .settings(
-      name := "chirper-api",
+      name := "user-service",
       version := "0.0.1",
-      scalacOptions ++= Seq("-feature"),
+      maintainer := "me@ruchij.com",
       buildInfoKeys := BuildInfoKey.ofN(name, organization, version, scalaVersion, sbtVersion),
       buildInfoPackage := "info",
-      libraryDependencies ++= rootDependencies ++ rootTestDependencies.map(_ % Test),
-      testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-h", "target/test-results/unit-tests"),
-      javaOptions in Test += "-Dconfig.file=conf/application.test.conf"
+      libraryDependencies ++=
+        Seq(guice, scalaz, jodaTime, playSlick, postgresql, sqlite, h2, jbcrypt, s3),
+      libraryDependencies ++=
+        Seq(scalaTestPlusPlay, pegdown, faker).map(_ % Test),
+      testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-h", "user-service/target/test-results/unit-tests"),
+      javaOptions in Test += "-Dconfig.file=conf/application.test.conf",
+      envVars in Test := 
+        Map(
+          "GIT_COMMIT" -> "unspecified", 
+          "GIT_BRANCH" -> "unspecified", 
+          "DOCKER_BUILD_TIMESTAMP" -> "1970-01-01T00:00:00Z"
+        )
     )
-    .dependsOn(macroUtils)
+    .dependsOn(macros, shared % "compile->compile;test->test")
 
-lazy val macroUtils =
-  (project in file("./macro-utils"))
+lazy val messageService =
+  (project in file("./message-service"))
+    .enablePlugins(PlayScala, BuildInfoPlugin)
     .settings(
-      name := "macro-utils",
+      name := "message-service",
+      version := "0.0.1",
+      maintainer := "me@ruchij.com",
+      buildInfoKeys := BuildInfoKey.ofN(name, organization, version, scalaVersion, sbtVersion),
+      buildInfoPackage := "info",
+      libraryDependencies ++=
+        Seq(guice, jodaTime)
+    )
+    .dependsOn(shared % "compile->compile;test->test")
+
+lazy val shared =
+  (project in file("./shared"))
+    .enablePlugins(PlayScala)
+    .disablePlugins(PlayLayoutPlugin)
+    .settings(
+      name := "shared",
+      version := "0.0.1",
+      libraryDependencies ++= Seq(scalaz, jodaTime, commonsValidator),
+      libraryDependencies ++= Seq(scalaTestPlusPlay).map(_ % Test)
+    )
+    .dependsOn(macros)
+
+lazy val macros =
+  (project in file("./macros"))
+    .settings(
+      name := "macros",
       version := "0.0.1",
       libraryDependencies ++= Seq(scalaReflect, typesafeConfig, jodaTime)
     )
 
-lazy val rootDependencies =
-  Seq(guice, scalaz, jodaTime, playSlick, postgresql, sqlite, h2, jbcrypt, commonsValidator, s3)
+addCommandAlias("cleanAll", "; messageService/clean; userService/clean; shared/clean; macros/clean")
+addCommandAlias("compileAll", "; macros/compile; shared/compile; userService/compile; messageService/compile")
+addCommandAlias("testWithCoverage", "; coverage; userService/test; messageService/test; coverageReport")
 
-lazy val rootTestDependencies = Seq(scalaTestPlusPlay, pegdown, faker)
-
-addCommandAlias("testWithCoverage", "; coverage; test; coverageReport")
-
-addCommandAlias("runWithPostgresql", "run -Dconfig.file=conf/application.postgresql.conf")
-addCommandAlias("runWithSqlite", "run -Dconfig.file=conf/application.sqlite.conf")
-addCommandAlias("runWithH2", "run -Dconfig.file=conf/application.h2.conf")
+addCommandAlias("userServiceWithPostgresql", "userService/run -Dconfig.file=user-service/conf/application.postgresql.conf")
+addCommandAlias("userServiceWithSqlite", "userService/run -Dconfig.file=user-service/conf/application.sqlite.conf")
+addCommandAlias("userServiceWithH2", "userService/run -Dconfig.file=user-service/conf/application.h2.conf")

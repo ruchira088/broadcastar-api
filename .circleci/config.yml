@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 
 alias:
   - &install-sbt
@@ -11,15 +11,18 @@ alias:
       apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 && \
       apt-get update && \
       apt-get install sbt -y
+
   - &install-jq
     name: Install jq
     command: |
       apt update && \
       apt install jq -y
+
   - &restore-sbt-cache
     keys:
       - sbt-cache-{{ checksum "project/build.properties" }}-{{ checksum "project/plugins.sbt" }}-{{ checksum "project/Dependencies.scala" }}
       - sbt-cache
+
   - &install-terraform
     name: Install Terraform
     command: |
@@ -31,22 +34,50 @@ alias:
       chmod +x /tmp/terraform && \
       mv /tmp/terraform /usr/local/bin
 
-jobs:
+  - &install-mustache-templating-engine
+      name: Install Mustache templating engine
+      command: |
+        apt update && \
+        apt install curl -y
+
+        curl -sL https://deb.nodesource.com/setup_12.x | bash && \
+        apt-get install -y nodejs && \
+        npm install -g mustache
+
+  - &install-git
+    name: Install Git and CA-certificates
+    command: |
+      apt-get update && \
+      apt-get install git apt-transport-https bc ca-certificates software-properties-common -y
+
+commands:
   create_aws_resources:
-    docker:
-      - image: ubuntu:18.04
+    parameters:
+      project_folder:
+        type: string
     steps:
       - run: *install-terraform
+      - run: *install-mustache-templating-engine
+      - run: *install-git
       - checkout
       - run:
           name: Create common AWS resources
           command: |
-            terraform init deploy/terraform/common
-            terraform apply -auto-approve deploy/terraform/common
+            terraform init << parameters.project_folder >>/deploy/terraform/shared
+            terraform apply -auto-approve << parameters.project_folder >>/deploy/terraform/shared
+      - run:
+          name: Create branch specific AWS resources
+          command: |
+            mkdir << parameters.project_folder >>/terraform-branch
+            echo "{ \"branchName\": \"`git rev-parse --abbrev-ref HEAD | tr " " "-" | tr [:upper:] [:lower:]`\" }" | mustache - << parameters.project_folder >>/deploy/terraform/branch/main.tf > << parameters.project_folder >>/terraform-branch/main.tf
+            terraform init << parameters.project_folder >>/terraform-branch
+            terraform apply -auto-approve << parameters.project_folder >>/terraform-branch
+            rm -rf << parameters.project_folder >>/terraform-branch
 
   compile_and_test:
-    docker:
-      - image: openjdk:8-jdk
+    parameters:
+      sbt_project_name:
+        type: string
     steps:
       - run: *install-sbt
       - checkout
@@ -56,10 +87,10 @@ jobs:
           command: sbt update
       - run:
           name: Compile
-          command: sbt compile
+          command: sbt << parameters.sbt_project_name >>/compile
       - run:
           name: Run unit tests
-          command: sbt test
+          command: sbt << parameters.sbt_project_name >>/test
       - save_cache:
           key: sbt-cache-{{ checksum "project/build.properties" }}-{{ checksum "project/plugins.sbt" }}-{{ checksum "project/Dependencies.scala" }}
           paths:
@@ -67,8 +98,11 @@ jobs:
             - ~/.ivy2
 
   push_docker_image:
-    docker:
-      - image: openjdk:8-jdk
+    parameters:
+      sbt_project_name:
+        type: string
+      project_folder:
+        type: string
     steps:
       - run: *install-sbt
       - setup_remote_docker:
@@ -99,22 +133,22 @@ jobs:
           command: aws ecr get-login --no-include-email --region ap-southeast-2 | bash
       - run:
           name: Build application binary
-          command: sbt dist
+          command: sbt << parameters.sbt_project_name >>/dist
       - run:
           name: Build production Docker image
           command: |
             docker build \
-              -t chirper-api \
+              -t << parameters.project_folder >> \
               --build-arg git_commit=`git rev-parse --short HEAD` \
               --build-arg git_branch=`git rev-parse --abbrev-ref HEAD` \
               --build-arg build_timestamp=`date --iso-8601=seconds` \
-              -f Dockerfile-prod .
+              -f << parameters.project_folder >>/Dockerfile-prod .
       - run:
           name: Push Docker images to ECR
           command: |
-            cd deploy/terraform/common && terraform init && cd ../../../
+            cd << parameters.project_folder >>/deploy/terraform/shared && terraform init && cd ../../../../
 
-            ecr=`cd deploy/terraform/common && terraform output -json | jq .chirper_api_ecr.value | tr -d '"' && cd ../../../`
+            ecr=`cd << parameters.project_folder >>/deploy/terraform/shared && terraform output -json | jq .ecr_url.value | tr -d '"' && cd ../../../../`
             git_commit=`git rev-parse --short HEAD`
             git_branch=`git rev-parse --abbrev-ref HEAD | tr [:upper:] [:lower:] | tr ' ' '-'`
             build_timestamp=`date +%F-%T | tr ':' '-'`
@@ -123,36 +157,33 @@ jobs:
 
             for tag in "${tags[@]}"
             do
-              docker tag chirper-api:latest "$ecr:$tag"
+              docker tag << parameters.project_folder >>:latest "$ecr:$tag"
               docker push "$ecr:$tag"
             done
 
-            cat > data.json << EOF
+            cat > << parameters.project_folder >>/data.json \<< EOF
               {
                 "dockerImage": "$ecr:$git_branch-$CIRCLE_BUILD_NUM",
                 "branch": "$git_branch"
               }
             EOF
 
-            cat > config-values.yml << EOF
+            cat > << parameters.project_folder >>/config-values.yml \<< EOF
               SAMPLE_KEY_1: SAMPLE_VALUE_1
               SAMPLE_KEY_2: SAMPLE_VALUE_2
             EOF
       - persist_to_workspace:
           root: .
           paths:
-            - data.json
-            - config-values.yml
+            - << parameters.project_folder >>/data.json
+            - << parameters.project_folder >>/config-values.yml
 
-  deploy_api:
-    docker:
-      - image: ubuntu:18.04
+  deploy_service:
+    parameters:
+      project_folder:
+        type: string
     steps:
-      - run:
-          name: Install Git and CA-certificates
-          command: |
-            apt-get update && \
-            apt-get install git apt-transport-https bc ca-certificates software-properties-common -y
+      - run: *install-git
       - run:
           name: Install kubectl
           command: |
@@ -172,15 +203,7 @@ jobs:
             curl -LO https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64 && \
             chmod +x kops-linux-amd64 && \
             mv kops-linux-amd64 /usr/local/bin/kops
-      - run:
-          name: Install Mustache templating engine
-          command: |
-            apt update && \
-            apt install curl -y
-
-            curl -sL https://deb.nodesource.com/setup_12.x | bash && \
-            apt-get install -y nodejs && \
-            npm install -g mustache
+      - run: *install-mustache-templating-engine
       - run: *install-jq
       - checkout
       - attach_workspace:
@@ -193,44 +216,74 @@ jobs:
       - run:
           name: Render K8s resource files
           command: |
-            mkdir k8s-resources
+            mkdir << parameters.project_folder >>/k8s-resources
 
-            for resource_file in `ls deploy/k8s/*`
+            for resource_file in `ls << parameters.project_folder >>/deploy/k8s/*`
             do
-              cat data.json | mustache - $resource_file > k8s-resources/`basename $resource_file`
+              cat << parameters.project_folder >>/data.json | mustache - $resource_file > << parameters.project_folder >>/k8s-resources/`basename $resource_file`
             done
       - run:
           name: Create K8s Namespace
-          command: kubectl apply -f k8s-resources/namespace.yml
+          command: kubectl apply -f << parameters.project_folder >>/k8s-resources/namespace.yml
       - run:
           name: Create K8s Config Map
           command: |
-            cat config-values.yml >> k8s-resources/config-map.yml
-            kubectl apply -f k8s-resources/config-map.yml
+            cat << parameters.project_folder >>/config-values.yml \>> << parameters.project_folder >>/k8s-resources/config-map.yml
+            kubectl apply -f << parameters.project_folder >>/k8s-resources/config-map.yml
       - run:
           name: Deploy to K8s cluster
-          command: kubectl apply -f k8s-resources/
+          command: kubectl apply -f << parameters.project_folder >>/k8s-resources/
       - run:
           name: Wait for succesful deployment
           command: |
             kubectl rollout status \
-              deployment/chirper-api-`cat data.json | jq .branch | tr -d '"'`-deployment \
-              --namespace=chirper
+              deployment/<< parameters.project_folder >>-deployment \
+              --namespace=chirper-`cat << parameters.project_folder >>/data.json | jq .branch | tr -d '"'`
+
+jobs:
+  user_service_create_aws_resources:
+    docker:
+      - image: ubuntu:18.04
+    steps:
+      - create_aws_resources:
+          project_folder: "user-service"
+
+  user_service_compile_and_test:
+    docker:
+      - image: openjdk:8-jdk
+    steps:
+      - compile_and_test:
+          sbt_project_name: "userService"
+
+  user_service_push_docker_image:
+    docker:
+      - image: openjdk:8-jdk
+    steps:
+      - push_docker_image:
+          sbt_project_name: "userService"
+          project_folder: "user-service"
+
+  user_service_deploy:
+    docker:
+      - image: ubuntu:18.04
+    steps:
+      - deploy_service:
+          project_folder: "user-service"
 
 workflows:
   version: 2
-  deploy:
+  user_service:
     jobs:
-      - create_aws_resources:
+      - user_service_create_aws_resources:
           context: aws-credentials
-      - compile_and_test:
+      - user_service_compile_and_test:
           requires:
-            - create_aws_resources
-      - push_docker_image:
-          context: aws-credentials
-          requires:
-            - compile_and_test
-      - deploy_api:
+            - user_service_create_aws_resources
+      - user_service_push_docker_image:
           context: aws-credentials
           requires:
-            - push_docker_image
+            - user_service_compile_and_test
+      - user_service_deploy:
+          context: aws-credentials
+          requires:
+            - user_service_push_docker_image

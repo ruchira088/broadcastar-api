@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  namespace: chirper-{{{ branch }}}
+  name: user-service-ingress
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+spec:
+  tls:
+    - secretName: user-service-tls
+      hosts:
+        - {{{ branch }}}.chirper-user.ruchij.com
+  rules:
+    - host: {{{ branch }}}.chirper-user.ruchij.com
+      http:
+        paths:
+          - backend:
+              serviceName: user-service
+              servicePort: 9000
