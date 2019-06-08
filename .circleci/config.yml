@@ -16,7 +16,7 @@ alias:
     name: Install jq
     command: |
       apt update && \
-      apt install jq -y
+      apt install apt-transport-https bc ca-certificates jq -y
 
   - &restore-sbt-cache
     keys:
@@ -173,9 +173,7 @@ commands:
               {
                 "dockerImage": "$ecr:$git_branch-$CIRCLE_BUILD_NUM",
                 "branch": "$git_branch",
-                "configMap": [
-                  { "key": "S3_BUCKET", "value": "$git_branch-chirper-user.ruchij.com" }
-                ]
+                "configMap": []
               }
             EOF
       - persist_to_workspace:
@@ -263,6 +261,24 @@ jobs:
           sbt_project_name: "userService"
           project_folder: "user-service"
 
+  user_add_config_map_values:
+    executor: ubuntu
+    steps:
+      - run: *install-jq
+      - attach_workspace:
+          at: .
+      - run:
+          name: Create user service K8s templating values
+          command: |
+            cat user-service/data.json > user-service/temp.json
+            git_branch=`cat user-service/data.json | jq .branch | tr -d '"'`
+
+            jq ".configMap = [{ \"key\": \"S3_BUCKET\", \"value\": \"$git_branch-chirper-user.ruchij.com\" }]" user-service/temp.json > user-service/data.json
+      - persist_to_workspace:
+          root: .
+          paths:
+            - user-service/data.json
+
   user_deploy:
     executor: ubuntu
     steps:
@@ -287,10 +303,13 @@ workflows:
           requires:
             - user_create_aws_resources
             - user_compile_and_test
+      - user_add_config_map_values:
+          requires:
+            - user_push_docker_image
       - user_deploy:
           context: aws-credentials
           requires:
-            - user_push_docker_image
+            - user_add_config_map_values
   message_service:
     jobs:
       - message_compile_and_test
