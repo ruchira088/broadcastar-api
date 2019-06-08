@@ -4,4 +4,6 @@ metadata:
   namespace: chirper-{{{ branch }}}
   name: user-service-config-map
 data:
-  ALLOWED_HOSTS: "."
+{{ #configMap }}
+  {{{ key }}}: {{{ value }}}
+{{ /configMap }}

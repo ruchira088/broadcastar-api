@@ -172,19 +172,17 @@ commands:
             cat > << parameters.project_folder >>/data.json \<< EOF
               {
                 "dockerImage": "$ecr:$git_branch-$CIRCLE_BUILD_NUM",
-                "branch": "$git_branch"
+                "branch": "$git_branch",
+                "configMap": [
+                  { key: "SAMPLE_KEY_1", value: "SAMPLE_VALUE_1" },
+                  { key: "SAMPLE_KEY_2", value: "SAMPLE_VALUE_2" }
+                ]
               }
-            EOF
-
-            cat > << parameters.project_folder >>/config-values.yml \<< EOF
-              SAMPLE_KEY_1: SAMPLE_VALUE_1
-              SAMPLE_KEY_2: SAMPLE_VALUE_2
             EOF
       - persist_to_workspace:
           root: .
           paths:
             - << parameters.project_folder >>/data.json
-            - << parameters.project_folder >>/config-values.yml
 
   deploy_service:
     parameters:
@@ -236,7 +234,6 @@ commands:
       - run:
           name: Create K8s Config Map
           command: |
-            cat << parameters.project_folder >>/config-values.yml \>> << parameters.project_folder >>/k8s-resources/config-map.yml
             kubectl apply -f << parameters.project_folder >>/k8s-resources/config-map.yml
       - run:
           name: Deploy to K8s cluster
