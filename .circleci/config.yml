@@ -174,8 +174,7 @@ commands:
                 "dockerImage": "$ecr:$git_branch-$CIRCLE_BUILD_NUM",
                 "branch": "$git_branch",
                 "configMap": [
-                  { key: "SAMPLE_KEY_1", value: "SAMPLE_VALUE_1" },
-                  { key: "SAMPLE_KEY_2", value: "SAMPLE_VALUE_2" }
+                  { "key": "S3_BUCKET", "value": "$git_branch-chirper-user.ruchij.com" }
                 ]
               }
             EOF
@@ -233,8 +232,7 @@ commands:
           command: kubectl apply -f << parameters.project_folder >>/k8s-resources/namespace.yml
       - run:
           name: Create K8s Config Map
-          command: |
-            kubectl apply -f << parameters.project_folder >>/k8s-resources/config-map.yml
+          command: kubectl apply -f << parameters.project_folder >>/k8s-resources/config-map.yml
       - run:
           name: Deploy to K8s cluster
           command: kubectl apply -f << parameters.project_folder >>/k8s-resources/
