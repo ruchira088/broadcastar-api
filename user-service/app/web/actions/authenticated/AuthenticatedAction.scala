@@ -1,6 +1,7 @@
 package web.actions.authenticated
 
 import com.ruchij.shared.utils.MonadicUtils.recoverWith
+import com.ruchij.shared.web.requests.SessionTokenExtractor
 import exceptions.InvalidCredentialsException
 import javax.inject.Inject
 import play.api.mvc.{ActionBuilderImpl, BodyParsers, Request, Result}

@@ -11,13 +11,13 @@ import dao.verification.EmailVerificationTokenDao
 import dao.verification.models.EmailVerificationToken
 import exceptions._
 import com.ruchij.shared.exceptions.aggregation.AggregatedExistingResourceException
+import com.ruchij.shared.models.User
 import javax.inject.{Inject, Singleton}
 import scalaz.std.scalaFuture.futureInstance
 import services.crypto.CryptographyService
 import services.notification.NotificationService
 import services.notification.models.NotificationType.Console
 import services.notification.console.models.ConsoleNotificationMessage._
-import services.user.models.User
 import web.requests.models.CreateUserRequest
 
 import scala.concurrent.{ExecutionContext, Future}

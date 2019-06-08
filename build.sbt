@@ -23,10 +23,10 @@ lazy val userService =
         Seq(scalaTestPlusPlay, pegdown, faker).map(_ % Test),
       testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-h", "user-service/target/test-results/unit-tests"),
       javaOptions in Test += "-Dconfig.file=conf/application.test.conf",
-      envVars in Test := 
+      envVars in Test :=
         Map(
-          "GIT_COMMIT" -> "unspecified", 
-          "GIT_BRANCH" -> "unspecified", 
+          "GIT_COMMIT" -> "unspecified",
+          "GIT_BRANCH" -> "unspecified",
           "DOCKER_BUILD_TIMESTAMP" -> "1970-01-01T00:00:00Z"
         )
     )
@@ -53,7 +53,7 @@ lazy val shared =
     .settings(
       name := "shared",
       version := "0.0.1",
-      libraryDependencies ++= Seq(scalaz, jodaTime, commonsValidator),
+      libraryDependencies ++= Seq(ws, scalaz, jodaTime, commonsValidator),
       libraryDependencies ++= Seq(scalaTestPlusPlay).map(_ % Test)
     )
     .dependsOn(macros)

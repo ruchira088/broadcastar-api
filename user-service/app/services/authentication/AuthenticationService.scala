@@ -2,8 +2,8 @@ package services.authentication
 
 import java.util.UUID
 
+import com.ruchij.shared.models.User
 import services.authentication.models.AuthenticationToken
-import services.user.models.User
 import web.requests.models.{ResetPasswordRequest, UserLoginRequest}
 
 import scala.concurrent.{ExecutionContext, Future}

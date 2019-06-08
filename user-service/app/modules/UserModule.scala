@@ -3,6 +3,7 @@ package modules
 import com.google.inject.{AbstractModule, Provides, Singleton, TypeLiteral}
 import com.ruchij.shared.info.BuildInformation
 import com.ruchij.shared.utils.SystemUtilities
+import com.ruchij.shared.web.requests.SessionTokenExtractor
 import com.typesafe.config.ConfigFactory
 import config.{ApplicationConfiguration, AuthenticationConfiguration, LocalFileStoreConfiguration, S3Configuration}
 import dao.authentication.{AuthenticationTokenDao, SlickAuthenticationTokenDao}
@@ -22,7 +23,6 @@ import services.storage.store.{FileStore, LocalFileStore}
 import services.storage.{StorageService, StorageServiceImpl}
 import services.user.{UserService, UserServiceImpl}
 import software.amazon.awssdk.services.s3.S3AsyncClient
-import web.actions.authenticated.SessionTokenExtractor
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}

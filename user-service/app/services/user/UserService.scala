@@ -2,7 +2,7 @@ package services.user
 
 import java.util.UUID
 
-import services.user.models.User
+import com.ruchij.shared.models.User
 import web.requests.models.CreateUserRequest
 
 import scala.concurrent.{ExecutionContext, Future}

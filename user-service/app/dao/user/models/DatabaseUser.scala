@@ -2,9 +2,9 @@ package dao.user.models
 
 import java.util.UUID
 
+import com.ruchij.shared.models.User
 import com.ruchij.shared.utils.SystemUtilities
 import org.joda.time.DateTime
-import services.user.models.User
 import web.requests.models.CreateUserRequest
 
 case class DatabaseUser(
