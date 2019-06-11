@@ -25,9 +25,9 @@ object Dependencies {
 
   lazy val typesafeConfig = "com.typesafe" % "config" % "1.3.4"
 
-  lazy val akkaActor = "com.typesafe.akka" %% "akka-actor" % "2.5.23"
+  lazy val akkaActor = "com.typesafe.akka" %% "akka-actor" % "2.5.22"
 
-  lazy val akkaStream = "com.typesafe.akka" %% "akka-stream" % "2.5.23"
+  lazy val akkaStream = "com.typesafe.akka" %% "akka-stream" % "2.5.22"
 
   lazy val kafkaClients = "org.apache.kafka" % "kafka-clients" % "2.2.1"
 
