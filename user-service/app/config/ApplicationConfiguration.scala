@@ -1,5 +1,6 @@
 package config
 
+import com.ruchij.shared.config.KafkaConfiguration
 import com.ruchij.shared.info.BuildInformation
 import com.typesafe.config.Config
 import play.api.libs.json.{Json, OWrites}
@@ -8,9 +9,10 @@ import scala.util.Try
 
 case class ApplicationConfiguration(
   applicationInformation: BuildInformation,
-  authenticationConfiguration: AuthenticationConfiguration,
+  authenticationConfiguration: SessionConfiguration,
   localFileStoreConfiguration: LocalFileStoreConfiguration,
-  s3Configuration: S3Configuration
+  s3Configuration: S3Configuration,
+  kafkaConfiguration: KafkaConfiguration
 )
 
 object ApplicationConfiguration {
@@ -19,14 +21,16 @@ object ApplicationConfiguration {
   def parse(config: Config): Try[ApplicationConfiguration] =
     for {
       buildInformation <- BuildInformation.parse(config)
-      authenticationConfiguration <- AuthenticationConfiguration.parse(config)
+      sessionConfiguration <- SessionConfiguration.parse(config)
       localFileStoreConfiguration <- LocalFileStoreConfiguration.parse(config)
       s3Configuration <- S3Configuration.parse(config)
+      kafkaConfiguration <- KafkaConfiguration.parse(config)
     } yield
       ApplicationConfiguration(
         buildInformation,
-        authenticationConfiguration,
+        sessionConfiguration,
         localFileStoreConfiguration,
-        s3Configuration
+        s3Configuration,
+        kafkaConfiguration
       )
 }

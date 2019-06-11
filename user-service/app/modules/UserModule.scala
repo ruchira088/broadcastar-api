@@ -5,7 +5,7 @@ import com.ruchij.shared.info.BuildInformation
 import com.ruchij.shared.utils.SystemUtilities
 import com.ruchij.shared.web.requests.SessionTokenExtractor
 import com.typesafe.config.ConfigFactory
-import config.{ApplicationConfiguration, AuthenticationConfiguration, LocalFileStoreConfiguration, S3Configuration}
+import config.{ApplicationConfiguration, SessionConfiguration, LocalFileStoreConfiguration, S3Configuration}
 import dao.authentication.{AuthenticationTokenDao, SlickAuthenticationTokenDao}
 import dao.reset.{ResetPasswordTokenDao, SlickResetPasswordTokenDao}
 import dao.resource.{ResourceInformationDao, SlickResourceInformationDao}
@@ -40,7 +40,7 @@ class UserModule extends AbstractModule {
     }
 
     bind(classOf[BuildInformation]).toInstance(applicationConfiguration.applicationInformation)
-    bind(classOf[AuthenticationConfiguration]).toInstance(applicationConfiguration.authenticationConfiguration)
+    bind(classOf[SessionConfiguration]).toInstance(applicationConfiguration.authenticationConfiguration)
     bind(classOf[LocalFileStoreConfiguration]).toInstance(applicationConfiguration.localFileStoreConfiguration)
     bind(classOf[S3Configuration]).toInstance(applicationConfiguration.s3Configuration)
 

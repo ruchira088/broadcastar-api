@@ -4,7 +4,8 @@ inThisBuild {
   Seq(
     organization := "com.ruchij",
     scalaVersion := SCALA_VERSION,
-    scalacOptions += "-feature"
+    scalacOptions += "-feature",
+    resolvers += "confluent" at "https://packages.confluent.io/maven/"
   )
 }
 
@@ -18,10 +19,23 @@ lazy val userService =
       buildInfoKeys := BuildInfoKey.ofN(name, organization, version, scalaVersion, sbtVersion),
       buildInfoPackage := "info",
       libraryDependencies ++=
-        Seq(guice, scalaz, jodaTime, playSlick, postgresql, sqlite, h2, jbcrypt, s3),
+        Seq(
+          guice,
+          scalaz,
+          jodaTime,
+          playSlick,
+          postgresql,
+          sqlite,
+          h2,
+          jbcrypt,
+          s3,
+          akkaStreamKafka,
+          kafkaAvroSerializer
+        ),
       libraryDependencies ++=
         Seq(scalaTestPlusPlay, pegdown, faker).map(_ % Test),
-      testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-h", "user-service/target/test-results/unit-tests"),
+      testOptions in Test += Tests
+        .Argument(TestFrameworks.ScalaTest, "-h", "user-service/target/test-results/unit-tests"),
       javaOptions in Test += "-Dconfig.file=conf/application.test.conf",
       envVars in Test :=
         Map(
@@ -53,23 +67,38 @@ lazy val shared =
     .settings(
       name := "shared",
       version := "0.0.1",
-      libraryDependencies ++= Seq(ws, scalaz, jodaTime, commonsValidator),
+      libraryDependencies ++= Seq(
+        ws,
+        scalaz,
+        jodaTime,
+        commonsValidator,
+        akkaActor,
+        akkaStream,
+        kafkaClients,
+        kafkaAvroSerializer,
+        akkaStreamKafka,
+        avro4s
+      ),
       libraryDependencies ++= Seq(scalaTestPlusPlay).map(_ % Test)
     )
     .dependsOn(macros)
 
+lazy val playground =
+  (project in file("./playground"))
+    .settings(name := "playground", version := "0.0.1", libraryDependencies ++= Seq(faker, logback, scalaLogging))
+    .dependsOn(shared)
+
 lazy val macros =
   (project in file("./macros"))
-    .settings(
-      name := "macros",
-      version := "0.0.1",
-      libraryDependencies ++= Seq(scalaReflect, typesafeConfig, jodaTime)
-    )
+    .settings(name := "macros", version := "0.0.1", libraryDependencies ++= Seq(scalaReflect, typesafeConfig, jodaTime))
 
 addCommandAlias("cleanAll", "; messageService/clean; userService/clean; shared/clean; macros/clean")
 addCommandAlias("compileAll", "; macros/compile; shared/compile; userService/compile; messageService/compile")
 addCommandAlias("testWithCoverage", "; coverage; userService/test; messageService/test; coverageReport")
 
-addCommandAlias("userServiceWithPostgresql", "userService/run -Dconfig.file=user-service/conf/application.postgresql.conf")
+addCommandAlias(
+  "userServiceWithPostgresql",
+  "userService/run -Dconfig.file=user-service/conf/application.postgresql.conf"
+)
 addCommandAlias("userServiceWithSqlite", "userService/run -Dconfig.file=user-service/conf/application.sqlite.conf")
 addCommandAlias("userServiceWithH2", "userService/run -Dconfig.file=user-service/conf/application.h2.conf")

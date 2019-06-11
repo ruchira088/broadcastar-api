@@ -1,25 +1,18 @@
 package com.ruchij.enum
 
+import com.ruchij.macros.utils.ClassUtils
+
 import scala.language.experimental.macros
 import scala.reflect.ClassTag
-import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
 
 trait Enum {
   self =>
 
-  def key: String = Enum.simpleClassName(self)
+  def key: String = ClassUtils.simpleClassName(self)
 }
 
 object Enum {
-  val ClassNameRegex: Regex = "(\\S+)\\$".r
-
-  def simpleClassName(clazz: AnyRef): String =
-    clazz.getClass.getSimpleName match {
-      case ClassNameRegex(className) => className
-      case className => className
-    }
-
   def values[A <: Enum](implicit enumValues: EnumValues[A]): Set[A] = enumValues.values
 
   def parse[A <: Enum : ClassTag](value: String)(implicit enumValues: EnumValues[A]): Try[A] =

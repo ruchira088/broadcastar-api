@@ -20,6 +20,6 @@ class ConsoleNotificationService extends NotificationService[Console.type] {
         notificationSerializer.serialize(message)
       }
 
-      ConsoleNotificationConfirmation()
+      ConsoleNotificationConfirmation
     }
 }

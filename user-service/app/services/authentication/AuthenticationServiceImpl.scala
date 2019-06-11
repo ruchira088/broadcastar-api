@@ -5,7 +5,7 @@ import java.util.UUID
 import com.ruchij.shared.models.User
 import com.ruchij.shared.utils.MonadicUtils._
 import com.ruchij.shared.utils.SystemUtilities
-import config.AuthenticationConfiguration
+import config.SessionConfiguration
 import dao.authentication.AuthenticationTokenDao
 import dao.reset.ResetPasswordTokenDao
 import dao.reset.models.ResetPasswordToken
@@ -26,7 +26,7 @@ class AuthenticationServiceImpl @Inject()(
   databaseUserDao: DatabaseUserDao,
   authenticationTokenDao: AuthenticationTokenDao,
   resetPasswordTokenDao: ResetPasswordTokenDao,
-  authenticationConfiguration: AuthenticationConfiguration
+  authenticationConfiguration: SessionConfiguration
 )(implicit systemUtilities: SystemUtilities)
     extends AuthenticationService {
   import systemUtilities.{currentTime, randomUuid}
