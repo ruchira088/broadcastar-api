@@ -37,23 +37,23 @@ object Playground {
     val kafkaProducer: KafkaProducer = new KafkaProducerImpl(KafkaProducerImpl.settings(kafkaConfiguration))
     val kafkaConsumer: KafkaConsumer = new KafkaConsumerImpl(KafkaConsumerImpl.settings(kafkaConfiguration))
 
-      Source
-        .tick(0 seconds, 100 milliseconds, (): Unit)
-        .map { _ =>
-          User(UUID.randomUUID(), DateTime.now(), faker.name().username(), faker.name().firstName(), None, faker.internet().emailAddress(), None)
-        }
-        .mapAsync(1) {
-          user =>
-            kafkaProducer.publish(KafkaMessage(user)).map(_ -> user)
-        }
-        .runWith {
-          Sink.foreach {
-            case (recordMetadata: RecordMetadata, user: User) =>
-              logger.info {
-                s"userId = ${user.userId}, offset = ${recordMetadata.offset()} "
-              }
-          }
-        }
+//      Source
+//        .tick(0 seconds, 100 milliseconds, (): Unit)
+//        .map { _ =>
+//          User(UUID.randomUUID(), DateTime.now(), faker.name().username(), faker.name().firstName(), None, faker.internet().emailAddress(), None)
+//        }
+//        .mapAsync(1) {
+//          user =>
+//            kafkaProducer.publish(KafkaMessage(user)).map(_ -> user)
+//        }
+//        .runWith {
+//          Sink.foreach {
+//            case (recordMetadata: RecordMetadata, user: User) =>
+//              logger.info {
+//                s"userId = ${user.userId}, offset = ${recordMetadata.offset()} "
+//              }
+//          }
+//        }
 
       kafkaConsumer
         .subscribe(UserCreated)

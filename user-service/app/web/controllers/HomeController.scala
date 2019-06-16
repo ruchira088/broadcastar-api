@@ -7,11 +7,12 @@ import info.BuildInfo
 import javax.inject._
 import play.api.libs.json.Json
 import play.api.mvc._
+import services.background.BackgroundService
 
 import scala.util.Properties
 
 @Singleton
-class HomeController @Inject()(controllerComponents: ControllerComponents)(
+class HomeController @Inject()(backgroundService: BackgroundService, controllerComponents: ControllerComponents)(
   implicit systemUtilities: SystemUtilities,
   applicationInformation: BuildInformation
 ) extends AbstractController(controllerComponents) {

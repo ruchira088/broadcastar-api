@@ -7,6 +7,10 @@ services:
       context: .
     tty: true
     command: "userServiceWithPostgresql"
+    depends_on:
+      - postgresql-database
+      - kafka-broker
+      - schema-registry
     ports:
       - 9000:9000
       - 5005:5005
@@ -24,6 +28,8 @@ services:
       POSTGRESQL_URL: "jdbc:postgresql://postgresql-database:5432/user-service"
       POSTGRESQL_USER: "my-user"
       POSTGRESQL_PASSWORD: "password"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka-broker:9092"
+      SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
 
   postgresql-database:
     image: postgres
@@ -52,7 +58,7 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: "0"
-      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://10.129.38.22:9092"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://192.168.1.4:9092"
 
   schema-registry:
     image: confluentinc/cp-schema-registry
@@ -63,6 +69,16 @@ services:
     environment:
       SCHEMA_REGISTRY_HOST_NAME: "schema-registry"
       SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: "zookeeper:2181"
+
+  schema-registry-ui:
+    image: landoop/schema-registry-ui
+    depends_on:
+      - schema-registry
+    ports:
+      - 8000:8000
+    environment:
+      SCHEMAREGISTRY_URL: "http://schema-registry:8081"
+      PROXY: "true"
 
 
 

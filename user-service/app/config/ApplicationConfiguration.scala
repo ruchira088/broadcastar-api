@@ -12,7 +12,8 @@ case class ApplicationConfiguration(
   authenticationConfiguration: SessionConfiguration,
   localFileStoreConfiguration: LocalFileStoreConfiguration,
   s3Configuration: S3Configuration,
-  kafkaConfiguration: KafkaConfiguration
+  kafkaConfiguration: KafkaConfiguration,
+  triggerConfiguration: TriggerConfiguration
 )
 
 object ApplicationConfiguration {
@@ -25,12 +26,14 @@ object ApplicationConfiguration {
       localFileStoreConfiguration <- LocalFileStoreConfiguration.parse(config)
       s3Configuration <- S3Configuration.parse(config)
       kafkaConfiguration <- KafkaConfiguration.parse(config)
+      triggerConfiguration <- TriggerConfiguration.parse(config)
     } yield
       ApplicationConfiguration(
         buildInformation,
         sessionConfiguration,
         localFileStoreConfiguration,
         s3Configuration,
-        kafkaConfiguration
+        kafkaConfiguration,
+        triggerConfiguration
       )
 }

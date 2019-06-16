@@ -16,6 +16,8 @@ trait DatabaseUserDao {
 
   def getByEmail(email: String)(implicit executionContext: ExecutionContext): OptionT[Future, DatabaseUser]
 
+  def getByIndex(index: Long)(implicit executionContext: ExecutionContext): OptionT[Future, DatabaseUser]
+
   def verifyEmail(userId: UUID)(implicit executionContext: ExecutionContext): OptionT[Future, Boolean]
 
   def update(userId: UUID, databaseUser: DatabaseUser)(implicit executionContext: ExecutionContext): OptionT[Future, DatabaseUser]

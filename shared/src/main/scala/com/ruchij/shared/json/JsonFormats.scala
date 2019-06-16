@@ -22,7 +22,7 @@ object JsonFormats {
   }
 
   implicit val finiteDurationWrites: Writes[FiniteDuration] =
-    (finiteDuration: FiniteDuration) => JsString(s"${finiteDuration.length} ${finiteDuration.unit.name()}")
+    (finiteDuration: FiniteDuration) => JsString(s"${finiteDuration.length} ${finiteDuration.unit.name().toLowerCase}")
 
   implicit val pathWrites: Writes[Path] = (path: Path) => JsString(path.toAbsolutePath.toString)
 }

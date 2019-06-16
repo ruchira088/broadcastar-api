@@ -10,6 +10,7 @@ import web.requests.models.CreateUserRequest
 case class DatabaseUser(
   userId: UUID,
   createdAt: DateTime,
+  index: Long,
   username: String,
   firstName: String,
   lastName: Option[String],
@@ -26,6 +27,7 @@ object DatabaseUser {
     DatabaseUser(
       systemUtilities.randomUuid(),
       systemUtilities.currentTime(),
+      -1,
       createUserRequest.username,
       createUserRequest.firstName,
       createUserRequest.lastName.flatMap(value => if (value.trim.isEmpty) None else Some(value)),
