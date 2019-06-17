@@ -8,8 +8,7 @@ import com.ruchij.shared.kafka.producer.{KafkaProducer, KafkaProducerImpl}
 import com.ruchij.shared.utils.SystemUtilities
 import com.ruchij.shared.web.requests.SessionTokenExtractor
 import com.typesafe.config.ConfigFactory
-import config.{ApplicationConfiguration, LocalFileStoreConfiguration, S3Configuration, SessionConfiguration, TriggerConfiguration}
-import dao.InitializableTable
+import config._
 import dao.authentication.{AuthenticationTokenDao, SlickAuthenticationTokenDao}
 import dao.offset.{OffsetDao, SlickOffsetDao}
 import dao.reset.{ResetPasswordTokenDao, SlickResetPasswordTokenDao}
@@ -17,7 +16,6 @@ import dao.resource.{ResourceInformationDao, SlickResourceInformationDao}
 import dao.user.{DatabaseUserDao, SlickDatabaseUserDao}
 import dao.verification.{EmailVerificationTokenDao, SlickEmailVerificationTokenDao}
 import ec.{BlockingExecutionContext, BlockingExecutionContextImpl}
-import modules.UserModule.{await, initialize}
 import play.api.libs.json.Json
 import services.authentication.{AuthenticationService, AuthenticationServiceImpl}
 import services.background.{BackgroundService, BackgroundServiceImpl}
@@ -31,8 +29,7 @@ import services.triggering.{TriggeringService, TriggeringServiceImpl}
 import services.user.{UserService, UserServiceImpl}
 import software.amazon.awssdk.services.s3.S3AsyncClient
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 
 class UserModule extends AbstractModule {
@@ -62,45 +59,16 @@ class UserModule extends AbstractModule {
     bind(classOf[FileStore]).to(classOf[LocalFileStore])
     bind(classOf[TriggeringService]).to(classOf[TriggeringServiceImpl])
 
+    bind(classOf[DatabaseUserDao]).to(classOf[SlickDatabaseUserDao])
+    bind(classOf[ResourceInformationDao]).to(classOf[SlickResourceInformationDao])
+    bind(classOf[AuthenticationTokenDao]).to(classOf[SlickAuthenticationTokenDao])
+    bind(classOf[EmailVerificationTokenDao]).to(classOf[SlickEmailVerificationTokenDao])
+    bind(classOf[ResetPasswordTokenDao]).to(classOf[SlickResetPasswordTokenDao])
+    bind(classOf[OffsetDao]).to(classOf[SlickOffsetDao])
+
     bind(new TypeLiteral[SessionTokenExtractor[String]] {}).toInstance(SessionTokenExtractor)
     bind(new TypeLiteral[NotificationService[NotificationType.Console.type]] {}).to(classOf[ConsoleNotificationService])
   }
-
-  @Singleton
-  @Provides
-  def databaseUserDao(
-    slickDatabaseUserDao: SlickDatabaseUserDao
-  )(implicit executionContext: ExecutionContext): DatabaseUserDao =
-    await(initialize(slickDatabaseUserDao))
-
-  @Singleton
-  @Provides
-  def resourceInformationDao(
-    slickResourceInformationDao: SlickResourceInformationDao
-  )(implicit executionContext: ExecutionContext): ResourceInformationDao =
-    await(initialize(slickResourceInformationDao))
-
-  @Singleton
-  @Provides
-  def authenticationTokenDao(
-    slickAuthenticationTokenDao: SlickAuthenticationTokenDao
-  )(implicit executionContext: ExecutionContext): AuthenticationTokenDao =
-    await(initialize(slickAuthenticationTokenDao))
-
-  @Singleton
-  @Provides
-  def emailVerificationTokenDao(slickEmailVerificationTokenDao: SlickEmailVerificationTokenDao)(implicit executionContext: ExecutionContext): EmailVerificationTokenDao =
-    await(initialize(slickEmailVerificationTokenDao))
-
-  @Singleton
-  @Provides
-  def passwordResetTokenDao(slickResetPasswordTokenDao: SlickResetPasswordTokenDao)(implicit executionContext: ExecutionContext): ResetPasswordTokenDao =
-    await(initialize(slickResetPasswordTokenDao))
-
-  @Singleton
-  @Provides
-  def offsetDao(slickOffsetDao: SlickOffsetDao)(implicit executionContext: ExecutionContext): OffsetDao =
-    await(initialize(slickOffsetDao))
 
   @Singleton
   @Provides
@@ -113,7 +81,9 @@ class UserModule extends AbstractModule {
       .recoverWith {
         case throwable =>
           println(throwable)
-          Future.failed(throwable)
+          throwable.printStackTrace()
+
+          Future.successful(backgroundService(backgroundServiceImpl))
       }
 
     println("Starting background service...")
@@ -125,11 +95,4 @@ class UserModule extends AbstractModule {
   @Provides
   def kafkaProducer(kafkaConfiguration: KafkaConfiguration)(implicit actorSystem: ActorSystem): KafkaProducer =
     new KafkaProducerImpl(KafkaProducerImpl.settings(kafkaConfiguration))
-}
-
-object UserModule {
-  private def await[A](future: Future[A]): A = Await.result(future, 60 seconds)
-
-  private def initialize[A <: InitializableTable](table: A)(implicit executionContext: ExecutionContext): Future[A] =
-    table.initialize().map(_ => table)
 }

@@ -2,10 +2,8 @@ package dao.offset
 
 import java.util.UUID
 
-import com.ruchij.enum.Enum
 import com.ruchij.shared.utils.MonadicUtils.OptionTWrapper
-import com.ruchij.shared.utils.{MonadicUtils, SystemUtilities}
-import dao.InitializableTable
+import com.ruchij.shared.utils.SystemUtilities
 import exceptions.FatalDatabaseException
 import javax.inject.{Inject, Singleton}
 import org.joda.time.DateTime
@@ -23,20 +21,16 @@ import scala.language.postfixOps
 class SlickOffsetDao @Inject()(override protected val dbConfigProvider: DatabaseConfigProvider)(
   implicit systemUtilities: SystemUtilities
 ) extends HasDatabaseConfigProvider[JdbcProfile]
-    with OffsetDao
-    with InitializableTable {
+    with OffsetDao {
 
+  import dao.SlickMappedColumns.{dateTimeMappedColumn, enumMappedColumn}
   import dbConfig.profile.api._
-  import dao.SlickMappedColumns.dateTimeMappedColumn
-  import dao.SlickMappedColumns.enumMappedColumn
 
-  override val TABLE_NAME: String = "offsets"
-
-  class OffsetTable(tag: Tag) extends Table[Offset](tag, TABLE_NAME) {
+  class OffsetTable(tag: Tag) extends Table[Offset](tag, SlickOffsetDao.TABLE_NAME) {
     def id: Rep[UUID] = column[UUID]("id", O.PrimaryKey)
     def createdAt: Rep[DateTime] = column[DateTime]("created_at")
     def offsetType: Rep[OffsetType] = column[OffsetType]("offset_type")
-    def value: Rep[Long] = column[Long]("long")
+    def value: Rep[Long] = column[Long]("value")
     def lockAcquiredAt: Rep[Option[DateTime]] = column[Option[DateTime]]("lock_acquired_at")
 
     def * : ProvenShape[Offset] =
@@ -109,23 +103,8 @@ class SlickOffsetDao @Inject()(override protected val dbConfigProvider: Database
           case _ => Future.successful(None)
         }
     }
+}
 
-  override protected def initializeCommand()(implicit executionContext: ExecutionContext): Future[Unit] =
-    db.run { offsets.schema.createIfNotExists }
-      .flatMap { _ =>
-        MonadicUtils.sequence[Future, Offset, Throwable](
-          Enum
-            .values[OffsetType]
-            .toList
-            .map { offsetType =>
-              getLatestOffset(offsetType)
-                .ifEmpty {
-                  insert {
-                    Offset(systemUtilities.randomUuid(), systemUtilities.currentTime(), offsetType, 1, None)
-                  }
-                }
-            }: _*
-        )
-      }
-      .map(_ => (): Unit)
+object SlickOffsetDao {
+  val TABLE_NAME = "offsets"
 }

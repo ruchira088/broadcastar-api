@@ -2,7 +2,7 @@ package dao.user
 
 import java.util.UUID
 
-import dao.InitializableTable
+import com.ruchij.shared.utils.MonadicUtils.OptionTWrapper
 import dao.user.models.DatabaseUser
 import exceptions.FatalDatabaseException
 import javax.inject.{Inject, Singleton}
@@ -12,7 +12,6 @@ import scalaz.OptionT
 import scalaz.std.scalaFuture.futureInstance
 import slick.jdbc.JdbcProfile
 import slick.lifted.ProvenShape
-import com.ruchij.shared.utils.MonadicUtils.OptionTWrapper
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
@@ -20,14 +19,12 @@ import scala.language.postfixOps
 @Singleton
 class SlickDatabaseUserDao @Inject()(override protected val dbConfigProvider: DatabaseConfigProvider)
     extends DatabaseUserDao
-    with HasDatabaseConfigProvider[JdbcProfile] with InitializableTable {
+    with HasDatabaseConfigProvider[JdbcProfile] {
 
-  import dbConfig.profile.api._
   import dao.SlickMappedColumns.dateTimeMappedColumn
+  import dbConfig.profile.api._
 
-  override val TABLE_NAME: String = "users"
-
-  class UserTable(tag: Tag) extends Table[DatabaseUser](tag, TABLE_NAME) {
+  class UserTable(tag: Tag) extends Table[DatabaseUser](tag, SlickDatabaseUserDao.TABLE_NAME) {
     def userId: Rep[UUID] = column[UUID]("user_id", O.Unique)
     def createdAt: Rep[DateTime] = column[DateTime]("created_at")
     def index: Rep[Long] = column[Long]("index", O.AutoInc)
@@ -87,7 +84,8 @@ class SlickDatabaseUserDao @Inject()(override protected val dbConfigProvider: Da
         _ => db.run { users.filter(_.userId === userId).update(databaseUser) }
       }
       .flatMap(_ => getByUserId(databaseUser.userId))
+}
 
-  override protected def initializeCommand()(implicit executionContext: ExecutionContext): Future[Unit] = db.run(users.schema.createIfNotExists)
-
+object SlickDatabaseUserDao {
+  val TABLE_NAME = "users"
 }

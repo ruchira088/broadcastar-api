@@ -10,6 +10,8 @@ object Dependencies {
   lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.2.27"
 
   lazy val playSlick = "com.typesafe.play" %% "play-slick" % "4.0.1"
+  
+  lazy val playSlickEvolutions = "com.typesafe.play" %% "play-slick-evolutions" % "4.0.1"
 
   lazy val postgresql = "org.postgresql" % "postgresql" % "42.2.5"
 

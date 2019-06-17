@@ -24,6 +24,7 @@ lazy val userService =
           scalaz,
           jodaTime,
           playSlick,
+          playSlickEvolutions,
           postgresql,
           sqlite,
           h2,

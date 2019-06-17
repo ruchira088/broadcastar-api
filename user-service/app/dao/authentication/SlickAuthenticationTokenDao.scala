@@ -2,7 +2,7 @@ package dao.authentication
 
 import java.util.UUID
 
-import dao.InitializableTable
+import com.ruchij.shared.utils.MonadicUtils.OptionTWrapper
 import dao.authentication.model.SlickAuthenticationToken
 import exceptions.FatalDatabaseException
 import javax.inject.{Inject, Singleton}
@@ -13,7 +13,6 @@ import scalaz.std.scalaFuture.futureInstance
 import services.authentication.models.AuthenticationToken
 import slick.jdbc.JdbcProfile
 import slick.lifted.ProvenShape
-import com.ruchij.shared.utils.MonadicUtils.OptionTWrapper
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
@@ -21,15 +20,12 @@ import scala.language.postfixOps
 @Singleton
 class SlickAuthenticationTokenDao @Inject()(override protected val dbConfigProvider: DatabaseConfigProvider)
     extends HasDatabaseConfigProvider[JdbcProfile]
-    with AuthenticationTokenDao
-    with InitializableTable {
+    with AuthenticationTokenDao {
 
-  import dbConfig.profile.api._
   import dao.SlickMappedColumns.dateTimeMappedColumn
+  import dbConfig.profile.api._
 
-  override val TABLE_NAME: String = "authentication_tokens"
-
-  class AuthenticationTokenDao(tag: Tag) extends Table[SlickAuthenticationToken](tag, TABLE_NAME) {
+  class AuthenticationTokenDao(tag: Tag) extends Table[SlickAuthenticationToken](tag, SlickAuthenticationTokenDao.TABLE_NAME) {
     def sessionToken: Rep[String] = column[String]("session_token", O.PrimaryKey)
     def userId: Rep[UUID] = column[UUID]("user_id")
     def secretToken: Rep[UUID] = column[UUID]("secret_token")
@@ -68,7 +64,8 @@ class SlickAuthenticationTokenDao @Inject()(override protected val dbConfigProvi
         }
       }
       .flatMap { _ => getBySessionToken(AuthenticationToken.sessionToken(authenticationToken)) }
+}
 
-  override protected def initializeCommand()(implicit executionContext: ExecutionContext): Future[Unit] =
-    db.run(authenticationTokens.schema.createIfNotExists)
+object SlickAuthenticationTokenDao {
+  val TABLE_NAME = "authentication_tokens"
 }

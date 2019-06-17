@@ -2,7 +2,7 @@ package dao.reset
 
 import java.util.UUID
 
-import dao.InitializableTable
+import com.ruchij.shared.utils.MonadicUtils.OptionTWrapper
 import dao.reset.models.ResetPasswordToken
 import exceptions.FatalDatabaseException
 import javax.inject.{Inject, Singleton}
@@ -12,7 +12,6 @@ import scalaz.OptionT
 import scalaz.std.scalaFuture.futureInstance
 import slick.jdbc.JdbcProfile
 import slick.lifted.{PrimaryKey, ProvenShape}
-import com.ruchij.shared.utils.MonadicUtils.OptionTWrapper
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
@@ -20,15 +19,12 @@ import scala.language.postfixOps
 @Singleton
 class SlickResetPasswordTokenDao @Inject()(override protected val dbConfigProvider: DatabaseConfigProvider)
     extends HasDatabaseConfigProvider[JdbcProfile]
-    with ResetPasswordTokenDao
-    with InitializableTable {
+    with ResetPasswordTokenDao {
 
-  import dbConfig.profile.api._
   import dao.SlickMappedColumns.dateTimeMappedColumn
+  import dbConfig.profile.api._
 
-  override val TABLE_NAME: String = "reset_password_tokens"
-
-  class ResetPasswordTokenTable(tag: Tag) extends Table[ResetPasswordToken](tag, TABLE_NAME) {
+  class ResetPasswordTokenTable(tag: Tag) extends Table[ResetPasswordToken](tag, SlickResetPasswordTokenDao.TABLE_NAME) {
     def userId: Rep[UUID] = column[UUID]("user_id")
     def secret: Rep[UUID] = column[UUID]("secret")
     def createdAt: Rep[DateTime] = column[DateTime]("created_at")
@@ -66,7 +62,8 @@ class SlickResetPasswordTokenDao @Inject()(override protected val dbConfigProvid
         }
         .map(_.headOption)
     }
+}
 
-  override protected def initializeCommand()(implicit executionContext: ExecutionContext): Future[Unit] =
-    db.run(resetPasswordTokens.schema.createIfNotExists)
+object SlickResetPasswordTokenDao {
+  val TABLE_NAME = "reset_password_tokens"
 }

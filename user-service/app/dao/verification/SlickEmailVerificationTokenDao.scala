@@ -4,7 +4,6 @@ import java.util.UUID
 
 import com.ruchij.shared.utils.MonadicUtils.OptionTWrapper
 import com.ruchij.shared.utils.SystemUtilities
-import dao.InitializableTable
 import dao.verification.models.EmailVerificationToken
 import exceptions.FatalDatabaseException
 import javax.inject.{Inject, Singleton}
@@ -22,15 +21,12 @@ import scala.language.postfixOps
 class SlickEmailVerificationTokenDao @Inject()(override protected val dbConfigProvider: DatabaseConfigProvider)(
   implicit systemUtilities: SystemUtilities
 ) extends HasDatabaseConfigProvider[JdbcProfile]
-    with EmailVerificationTokenDao
-    with InitializableTable {
+    with EmailVerificationTokenDao {
 
-  import dbConfig.profile.api._
   import dao.SlickMappedColumns.dateTimeMappedColumn
+  import dbConfig.profile.api._
 
-  override val TABLE_NAME: String = "email_verification_tokens"
-
-  class EmailVerificationTokenTable(tag: Tag) extends Table[EmailVerificationToken](tag, TABLE_NAME) {
+  class EmailVerificationTokenTable(tag: Tag) extends Table[EmailVerificationToken](tag, SlickEmailVerificationTokenDao.TABLE_NAME) {
     def userId: Rep[UUID] = column[UUID]("user_id")
     def secret: Rep[UUID] = column[UUID]("secret")
     def email: Rep[String] = column[String]("email")
@@ -88,7 +84,8 @@ class SlickEmailVerificationTokenDao @Inject()(override protected val dbConfigPr
             .flatMap { _ => verifyEmail(userId, secret) }
         }(_ => OptionT.some[Future, EmailVerificationToken](result))
       }
+}
 
-  override protected def initializeCommand()(implicit executionContext: ExecutionContext): Future[Unit] =
-    db.run(emailVerificationTokens.schema.createIfNotExists)
+object SlickEmailVerificationTokenDao {
+  val TABLE_NAME = "email_verification_tokens"
 }

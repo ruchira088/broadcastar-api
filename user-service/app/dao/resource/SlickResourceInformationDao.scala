@@ -1,6 +1,6 @@
 package dao.resource
 
-import dao.InitializableTable
+import com.ruchij.shared.utils.MonadicUtils.OptionTWrapper
 import exceptions.FatalDatabaseException
 import javax.inject.{Inject, Singleton}
 import org.joda.time.DateTime
@@ -10,7 +10,6 @@ import scalaz.std.scalaFuture.futureInstance
 import services.storage.models.ResourceInformation
 import slick.jdbc.JdbcProfile
 import slick.lifted.ProvenShape
-import com.ruchij.shared.utils.MonadicUtils.OptionTWrapper
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
@@ -18,15 +17,13 @@ import scala.language.postfixOps
 @Singleton
 class SlickResourceInformationDao @Inject()(override protected val dbConfigProvider: DatabaseConfigProvider)
     extends HasDatabaseConfigProvider[JdbcProfile]
-    with ResourceInformationDao with InitializableTable {
+    with ResourceInformationDao {
 
-  import dbConfig.profile.api._
   import dao.SlickMappedColumns.dateTimeMappedColumn
-
-  override val TABLE_NAME: String = "resource_information"
+  import dbConfig.profile.api._
 
   class ResourceInformationTable(tag: Tag)
-      extends Table[ResourceInformation](tag, TABLE_NAME) {
+      extends Table[ResourceInformation](tag, SlickResourceInformationDao.TABLE_NAME) {
     def key: Rep[String] = column[String]("key", O.PrimaryKey)
     def createdAt: Rep[DateTime] = column[DateTime]("created_at")
     def fileName: Rep[String] = column[String]("file_name")
@@ -54,7 +51,8 @@ class SlickResourceInformationDao @Inject()(override protected val dbConfigProvi
       db.run { resourceInformationItems.filter(_.key === key).take(1).result }
         .map(_.headOption)
     }
+}
 
-  override protected def initializeCommand()(implicit executionContext: ExecutionContext): Future[Unit] =
-    db.run(resourceInformationItems.schema.createIfNotExists)
+object SlickResourceInformationDao {
+  val TABLE_NAME = "resource_information"
 }
