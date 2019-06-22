@@ -16,12 +16,12 @@ import scala.collection.JavaConverters.mapAsJavaMapConverter
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class KafkaConsumerImpl @Inject()(consumerSettings: ConsumerSettings[String, AnyRef]) extends KafkaConsumer {
+class KafkaConsumerImpl @Inject()(kafkaConfiguration: KafkaConfiguration)(implicit actorSystem: ActorSystem) extends KafkaConsumer {
   override def subscribe[A](
     kafkaTopic: KafkaTopic[A]
   )(implicit executionContext: ExecutionContext): Source[(A, CommittableOffset), _] =
     Consumer
-      .committableSource(consumerSettings, Subscriptions.topics(kafkaTopic.name))
+      .committableSource(KafkaConsumerImpl.settings(kafkaConfiguration), Subscriptions.topics(kafkaTopic.name(kafkaConfiguration)))
       .map { committableMessage => (committableMessage.record.value(), committableMessage.committableOffset) }
       .collect {
         case (genericRecord: GenericRecord, committableOffset: CommittableOffset) =>

@@ -13,14 +13,14 @@ import scala.collection.JavaConverters.mapAsJavaMapConverter
 import scala.concurrent.{ExecutionContext, Future, Promise}
 
 @Singleton
-class KafkaProducerImpl @Inject()(producerSettings: ProducerSettings[String, AnyRef]) extends KafkaProducer {
-  lazy val kafkaProducer: Producer[String, AnyRef] = producerSettings.createKafkaProducer()
+class KafkaProducerImpl @Inject()(kafkaConfiguration: KafkaConfiguration)(implicit actorSystem: ActorSystem) extends KafkaProducer {
+  lazy val kafkaProducer: Producer[String, AnyRef] = KafkaProducerImpl.settings(kafkaConfiguration).createKafkaProducer()
 
   override def publish[A](message: KafkaMessage[A])(implicit executionContext: ExecutionContext): Future[RecordMetadata] = {
     val promise = Promise[RecordMetadata]
 
       kafkaProducer.send(
-        new ProducerRecord[String, AnyRef](message.kafkaTopic.name, message.kafkaTopic.recordFormat.to(message.value)),
+        new ProducerRecord[String, AnyRef](message.kafkaTopic.name(kafkaConfiguration), message.kafkaTopic.recordFormat.to(message.value)),
         new Callback {
           override def onCompletion(metadata: RecordMetadata, exception: Exception): Unit =
             Option(exception).fold(promise.success(metadata))(promise.failure)

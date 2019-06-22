@@ -58,6 +58,7 @@ class UserModule extends AbstractModule {
     bind(classOf[AuthenticationService]).to(classOf[AuthenticationServiceImpl])
     bind(classOf[FileStore]).to(classOf[LocalFileStore])
     bind(classOf[TriggeringService]).to(classOf[TriggeringServiceImpl])
+    bind(classOf[KafkaProducer]).to(classOf[KafkaProducerImpl])
 
     bind(classOf[DatabaseUserDao]).to(classOf[SlickDatabaseUserDao])
     bind(classOf[ResourceInformationDao]).to(classOf[SlickResourceInformationDao])
@@ -90,9 +91,4 @@ class UserModule extends AbstractModule {
 
     backgroundServiceImpl
   }
-
-  @Singleton
-  @Provides
-  def kafkaProducer(kafkaConfiguration: KafkaConfiguration)(implicit actorSystem: ActorSystem): KafkaProducer =
-    new KafkaProducerImpl(KafkaProducerImpl.settings(kafkaConfiguration))
 }

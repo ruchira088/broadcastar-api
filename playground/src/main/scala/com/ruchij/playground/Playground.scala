@@ -16,6 +16,7 @@ import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.Logger
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.joda.time.DateTime
+import play.api.libs.json.Json
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration._
@@ -32,11 +33,10 @@ object Playground {
     implicit val materializer: ActorMaterializer = ActorMaterializer()
     implicit val executionContextExecutor: ExecutionContextExecutor = actorSystem.dispatcher
 
-    val faker = Faker.instance()
+    val kafkaConsumer: KafkaConsumer = new KafkaConsumerImpl(kafkaConfiguration)
 
-    val kafkaProducer: KafkaProducer = new KafkaProducerImpl(KafkaProducerImpl.settings(kafkaConfiguration))
-    val kafkaConsumer: KafkaConsumer = new KafkaConsumerImpl(KafkaConsumerImpl.settings(kafkaConfiguration))
-
+//    val kafkaProducer: KafkaProducer = new KafkaProducerImpl(kafkaConfiguration)
+//    val faker = Faker.instance()
 //      Source
 //        .tick(0 seconds, 100 milliseconds, (): Unit)
 //        .map { _ =>
@@ -59,7 +59,10 @@ object Playground {
         .subscribe(UserCreated)
         .mapAsync(1) {
           case (user, committableOffset) =>
-            logger.info(user.toString)
+            logger.info {
+              Json.toJson[User].andThen(Json.prettyPrint)(user)
+            }
+
             committableOffset.commitScaladsl()
         }
         .runWith(Sink.ignore)

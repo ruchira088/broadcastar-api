@@ -6,7 +6,12 @@ import ConfigurationParser.stringConfigParser
 
 import scala.util.Try
 
-case class KafkaConfiguration(bootstrapServers: String, schemaRegistryUrl: String, consumerGroupId: String)
+case class KafkaConfiguration(
+  bootstrapServers: String,
+  schemaRegistryUrl: String,
+  topicPrefix: String,
+  consumerGroupId: String
+)
 
 object KafkaConfiguration {
   implicit val kafkaConfigurationWrites: Writes[KafkaConfiguration] = Json.writes[KafkaConfiguration]
