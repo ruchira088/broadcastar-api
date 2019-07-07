@@ -5,7 +5,7 @@ object Dependencies {
 
   lazy val scalaReflect = "org.scala-lang" % "scala-reflect" % SCALA_VERSION
 
-  lazy val jodaTime = "joda-time" % "joda-time" % "2.10.2"
+  lazy val jodaTime = "joda-time" % "joda-time" % "2.10.3"
 
   lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.2.28"
 
@@ -23,7 +23,7 @@ object Dependencies {
 
   lazy val commonsValidator = "commons-validator" % "commons-validator" % "1.6"
 
-  lazy val s3 = "software.amazon.awssdk" % "s3" % "2.6.2"
+  lazy val s3 = "software.amazon.awssdk" % "s3" % "2.7.0"
 
   lazy val typesafeConfig = "com.typesafe" % "config" % "1.3.4"
 

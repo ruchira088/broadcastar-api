@@ -13,7 +13,9 @@
         cd ../../../
 
         sbt userService/clean userService/dist
-    - shell: |
+
+    - name: Build production Docker image
+      shell: |
         cd ../../../
 
         docker build \
@@ -22,8 +24,12 @@
           --build-arg git_branch={{ git_branch }} \
           --build-arg build_timestamp={{ ansible_date_time.iso8601 }} \
           -f user-service/Dockerfile-prod .
-    - shell: $(aws ecr get-login --no-include-email --region ap-southeast-2)
-    - shell: |
+
+    - name: Login to ECR
+      shell: $(aws ecr get-login --no-include-email --region ap-southeast-2)
+
+    - name: Push Docker image to ECR
+      shell: |
         docker tag user-service:{{ git_commit }} {{ ecr_url }}:{{ item }}
         docker push {{ ecr_url }}:{{ item }}
       with_items:

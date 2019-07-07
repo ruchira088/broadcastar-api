@@ -5,6 +5,7 @@
   connection: local
   vars:
     docker_image: "{{ ecr_url }}:{{ git_commit }}"
+    kops_state_store: "s3://kops.ruchij.com"
     secrets:
       KAFKA_USERNAME: '{{ lookup("aws_ssm", "/chirper-api/kafka/username") }}'
       KAFKA_PASSWORD: '{{ lookup("aws_ssm", "/chirper-api/kafka/password") }}'
@@ -13,16 +14,39 @@
     config_values:
       S3_BUCKET: "{{ s3_bucket }}"
   tasks:
-    - file:
+    - name: Creating an output directory
+      file:
         path: output
         state: directory
-    - template:
+
+    - name: Rendering the K8s resource files
+      template:
         src: "{{ item }}"
         dest: "output/{{ item | basename }}"
       with_fileglob:
         - ../k8s/*.yml
-    - s3_sync:
+
+    - name: Upload K8s resource files to S3
+      s3_sync:
         bucket: user-service.ruchij.com
         key_prefix: "{{ git_branch }}/{{ git_commit}}"
         file_root: output
+
+    - name: Fetch kubectl configuration
+      shell: KOPS_STATE_STORE="{{ kops_state_store }}" kops export kubecfg k8s.ruchij.com
+
+    - name: Create Namespace
+      command: kubectl apply -f output/namespace.yml
+
+    - name: Set ConfigMap
+      command: kubectl apply -f output/config-map.yml
+
+    - name: Set Secrets
+      command: kubectl apply -f output/secrets.yml
+
+    - name: Deploy to K8s cluster
+      command: kubectl apply -f output/
+
+    - name: Wait for successful deployment
+      command: kubectl rollout status deployment/user-service-deployment -n chirper-{{ git_branch }}
 

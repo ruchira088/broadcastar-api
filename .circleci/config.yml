@@ -1,54 +1,96 @@
 version: 2.1
 
 alias:
-  - &install-sbt
-    name: Install sbt
-    command: |
-      apt-get update && \
-      apt-get install apt-transport-https bc ca-certificates software-properties-common -y
-
-      echo "deb https://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list && \
-      apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 && \
-      apt-get update && \
-      apt-get install sbt -y
-
-  - &install-jq
-    name: Install jq
-    command: |
-      apt update && \
-      apt install apt-transport-https bc ca-certificates jq -y
-
   - &restore-sbt-cache
     keys:
       - sbt-cache-{{ checksum "project/build.properties" }}-{{ checksum "project/plugins.sbt" }}-{{ checksum "project/Dependencies.scala" }}
       - sbt-cache
 
-  - &install-terraform
+  - &git
+    name: Install Git and CA-certificates
+    command: |
+      apt update && \
+      apt install git apt-transport-https bc ca-certificates software-properties-common -y
+
+  - &ansible
+    name: Install Ansible
+    command: |
+      apt update && \
+      apt install software-properties-common python-pip -y
+
+      pip install ansible boto3 botocore
+
+  - &sbt
+    name: Install sbt
+    command: |
+      apt update && \
+      apt install apt-transport-https bc ca-certificates software-properties-common -y
+
+      echo "deb https://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list && \
+      apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 && \
+      apt update && \
+      apt install sbt -y
+
+  - &jq
+    name: Install jq
+    command: |
+      apt update && \
+      apt install apt-transport-https bc ca-certificates jq -y
+
+  - &terraform
     name: Install Terraform
     command: |
       apt update && \
       apt install unzip curl -y
 
-      curl -L -o /tmp/terraform.zip https://releases.hashicorp.com/terraform/0.11.14/terraform_0.11.14_linux_amd64.zip && \
+      curl -L -o /tmp/terraform.zip https://releases.hashicorp.com/terraform/$TERRAFORM_VERSION/terraform_"${TERRAFORM_VERSION}"_linux_amd64.zip && \
       unzip -d /tmp /tmp/terraform.zip && \
       chmod +x /tmp/terraform && \
       mv /tmp/terraform /usr/local/bin
+    environment:
+      TERRAFORM_VERSION: 0.12.3
 
-  - &install-mustache-templating-engine
-      name: Install Mustache templating engine
-      command: |
-        apt update && \
-        apt install curl -y
-
-        curl -sL https://deb.nodesource.com/setup_12.x | bash && \
-        apt-get install -y nodejs && \
-        npm install -g mustache
-
-  - &install-git
-    name: Install Git and CA-certificates
+  - &aws-cli
+    name: Install AWS CLI
     command: |
-      apt-get update && \
-      apt-get install git apt-transport-https bc ca-certificates software-properties-common -y
+      apt update && \
+      apt install python-pip python-dev build-essential -y
+
+      pip install awscli --upgrade --user && \
+      ln -sf $HOME/.local/bin/aws /usr/local/bin
+
+  - &docker-client
+    name: Install Docker client
+    command: |
+      apt update && \
+      apt install curl -y
+
+      curl -L -o /tmp/docker.tgz https://download.docker.com/linux/static/stable/x86_64/docker-"${DOCKER_VERSION}".tgz && \
+      tar -xv -C /tmp -f /tmp/docker.tgz && \
+      mv /tmp/docker/* /usr/local/bin
+    environment:
+      DOCKER_VERSION: 18.09.6
+
+  - &kubectl
+    name: Install kubectl
+    command: |
+      apt update && \
+      apt install curl gnupg2 apt-transport-https -y
+
+      curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
+      echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list && \
+      apt update && \
+      apt install -y kubectl
+
+  - &kops
+    name: Install kops
+    command: |
+      apt update && \
+      apt install curl -y
+
+      curl -LO https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64 && \
+      chmod +x kops-linux-amd64 && \
+      mv kops-linux-amd64 /usr/local/bin/kops
 
 executors:
   ubuntu:
@@ -59,35 +101,12 @@ executors:
       - image: openjdk:8-jdk
 
 commands:
-  create_aws_resources:
-    parameters:
-      project_folder:
-        type: string
-    steps:
-      - run: *install-terraform
-      - run: *install-mustache-templating-engine
-      - run: *install-git
-      - checkout
-      - run:
-          name: Create common AWS resources
-          command: |
-            terraform init << parameters.project_folder >>/deploy/terraform/shared
-            terraform apply -auto-approve << parameters.project_folder >>/deploy/terraform/shared
-      - run:
-          name: Create branch specific AWS resources
-          command: |
-            mkdir << parameters.project_folder >>/terraform-branch
-            echo "{ \"branchName\": \"`git rev-parse --abbrev-ref HEAD | tr " " "-" | tr [:upper:] [:lower:]`\" }" | mustache - << parameters.project_folder >>/deploy/terraform/branch/main.tf > << parameters.project_folder >>/terraform-branch/main.tf
-            terraform init << parameters.project_folder >>/terraform-branch
-            terraform apply -auto-approve << parameters.project_folder >>/terraform-branch
-            rm -rf << parameters.project_folder >>/terraform-branch
-
   compile_and_test:
     parameters:
-      sbt_project_name:
+      sbt_project:
         type: string
     steps:
-      - run: *install-sbt
+      - run: *sbt
       - checkout
       - restore_cache: *restore-sbt-cache
       - run:
@@ -95,201 +114,71 @@ commands:
           command: sbt update
       - run:
           name: Compile
-          command: sbt << parameters.sbt_project_name >>/compile
+          command: sbt << parameters.sbt_project >>/compile
       - run:
           name: Run unit tests
-          command: sbt << parameters.sbt_project_name >>/test
+          command: sbt << parameters.sbt_project >>/test
       - save_cache:
           key: sbt-cache-{{ checksum "project/build.properties" }}-{{ checksum "project/plugins.sbt" }}-{{ checksum "project/Dependencies.scala" }}
           paths:
             - ~/.sbt
             - ~/.ivy2
 
-  push_docker_image:
-    parameters:
-      sbt_project_name:
-        type: string
-      project_folder:
-        type: string
-    steps:
-      - run: *install-sbt
-      - setup_remote_docker:
-          version: 18.09.3
-      - run:
-          name: Install Docker client
-          command: |
-            apt update && \
-            apt install curl -y
-
-            curl -L -o /tmp/docker.tgz https://download.docker.com/linux/static/stable/x86_64/docker-18.09.6.tgz && \
-            tar -xv -C /tmp -f /tmp/docker.tgz && \
-            mv /tmp/docker/* /usr/local/bin
-      - run:
-          name: Install AWS CLI
-          command: |
-            apt update && \
-            apt install python-pip python-dev build-essential -y
-
-            pip install awscli --upgrade --user && \
-            ln -sf $HOME/.local/bin/aws /usr/local/bin
-      - run: *install-terraform
-      - run: *install-jq
-      - checkout
-      - restore_cache: *restore-sbt-cache
-      - run:
-          name: Login to ECR
-          command: aws ecr get-login --no-include-email --region ap-southeast-2 | bash
-      - run:
-          name: Build application binary
-          command: sbt << parameters.sbt_project_name >>/dist
-      - run:
-          name: Build production Docker image
-          command: |
-            docker build \
-              -t << parameters.project_folder >> \
-              --build-arg git_commit=`git rev-parse --short HEAD` \
-              --build-arg git_branch=`git rev-parse --abbrev-ref HEAD` \
-              --build-arg build_timestamp=`date --iso-8601=seconds` \
-              -f << parameters.project_folder >>/Dockerfile-prod .
-      - run:
-          name: Push Docker images to ECR
-          command: |
-            cd << parameters.project_folder >>/deploy/terraform/shared && terraform init && cd ../../../../
-
-            ecr=`cd << parameters.project_folder >>/deploy/terraform/shared && terraform output -json | jq .ecr_url.value | tr -d '"' && cd ../../../../`
-            git_commit=`git rev-parse --short HEAD`
-            git_branch=`git rev-parse --abbrev-ref HEAD | tr [:upper:] [:lower:] | tr ' ' '-'`
-            build_timestamp=`date +%F-%T | tr ':' '-'`
-
-            tags=($git_commit $git_branch-$CIRCLE_BUILD_NUM $build_timestamp-$git_branch)
-
-            for tag in "${tags[@]}"
-            do
-              docker tag << parameters.project_folder >>:latest "$ecr:$tag"
-              docker push "$ecr:$tag"
-            done
-
-            cat > << parameters.project_folder >>/data.json \<< EOF
-              {
-                "dockerImage": "$ecr:$git_branch-$CIRCLE_BUILD_NUM",
-                "branch": "$git_branch",
-                "configMap": []
-              }
-            EOF
-      - persist_to_workspace:
-          root: .
-          paths:
-            - << parameters.project_folder >>/data.json
-
-  deploy_service:
-    parameters:
-      project_folder:
-        type: string
-    steps:
-      - run: *install-git
-      - run:
-          name: Install kubectl
-          command: |
-            apt-get update && \
-            apt-get install curl gnupg2 apt-transport-https -y
-
-            curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
-            echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list && \
-            apt-get update && \
-            apt-get install -y kubectl
-      - run:
-          name: Install kops
-          command: |
-            apt update && \
-            apt install curl -y
-
-            curl -LO https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64 && \
-            chmod +x kops-linux-amd64 && \
-            mv kops-linux-amd64 /usr/local/bin/kops
-      - run: *install-mustache-templating-engine
-      - run: *install-jq
-      - checkout
-      - attach_workspace:
-          at: .
-      - run:
-          name: Fetch the kubectl config
-          command: kops export kubecfg k8s.ruchij.com
-          environment:
-            KOPS_STATE_STORE: s3://kops.ruchij.com
-      - run:
-          name: Render K8s resource files
-          command: |
-            mkdir << parameters.project_folder >>/k8s-resources
-
-            for resource_file in `ls << parameters.project_folder >>/deploy/k8s/*`
-            do
-              cat << parameters.project_folder >>/data.json | mustache - $resource_file > << parameters.project_folder >>/k8s-resources/`basename $resource_file`
-            done
-      - run:
-          name: Create K8s Namespace
-          command: kubectl apply -f << parameters.project_folder >>/k8s-resources/namespace.yml
-      - run:
-          name: Create K8s Config Map
-          command: kubectl apply -f << parameters.project_folder >>/k8s-resources/config-map.yml
-      - run:
-          name: Deploy to K8s cluster
-          command: kubectl apply -f << parameters.project_folder >>/k8s-resources/
-      - run:
-          name: Wait for succesful deployment
-          command: |
-            kubectl rollout status \
-              deployment/<< parameters.project_folder >>-deployment \
-              --namespace=chirper-`cat << parameters.project_folder >>/data.json | jq .branch | tr -d '"'`
-
 jobs:
   user_create_aws_resources:
     executor: ubuntu
     steps:
-      - create_aws_resources:
-          project_folder: "user-service"
+      - run: *git
+      - run: *ansible
+      - run: *terraform
+      - checkout
+      - run:
+          name: Apply Terraform files
+          command: ansible-playbook user-service/ci/ansible/aws-resources.yml
 
   user_compile_and_test:
     executor: open-jdk
     steps:
       - compile_and_test:
-          sbt_project_name: "userService"
+          sbt_project: userService
 
-  user_push_docker_image:
+  user_build_and_push_docker_image:
     executor: open-jdk
     steps:
-      - push_docker_image:
-          sbt_project_name: "userService"
-          project_folder: "user-service"
-
-  user_add_config_map_values:
-    executor: ubuntu
-    steps:
-      - run: *install-jq
-      - attach_workspace:
-          at: .
+      - setup_remote_docker:
+          version: 18.09.3
+      - run: *sbt
+      - run: *ansible
+      - run: *docker-client
+      - run: *aws-cli
+      - run: *terraform
+      - checkout
+      - restore_cache: *restore-sbt-cache
       - run:
-          name: Create user service K8s templating values
+          name: Build and push production Docker image to ECR
           command: |
-            cat user-service/data.json > user-service/temp.json
-            git_branch=`cat user-service/data.json | jq .branch | tr -d '"'`
-
-            jq ".configMap = [{ \"key\": \"S3_BUCKET\", \"value\": \"$git_branch-chirper-user.ruchij.com\" }]" user-service/temp.json > user-service/data.json
-      - persist_to_workspace:
-          root: .
-          paths:
-            - user-service/data.json
+            ansible-playbook user-service/ci/ansible/docker-image.yml \
+              --extra-vars "circle_ci_build_number=$CIRCLE_BUILD_NUM"
 
   user_deploy:
     executor: ubuntu
     steps:
-      - deploy_service:
-          project_folder: "user-service"
+      - run: *git
+      - run: *ansible
+      - run: *terraform
+      - run: *kubectl
+      - run: *kops
+      - checkout
+      - run:
+          name: Deploy to K8s cluster
+          command: |
+            ansible-playbook user-service/ci/ansible/k8s-deploy.yml
 
   message_compile_and_test:
     executor: open-jdk
     steps:
       - compile_and_test:
-          sbt_project_name: "messageService"
+          sbt_project: messageService
 
 workflows:
   version: 2
@@ -298,18 +187,15 @@ workflows:
       - user_create_aws_resources:
           context: aws-credentials
       - user_compile_and_test
-      - user_push_docker_image:
+      - user_build_and_push_docker_image:
           context: aws-credentials
           requires:
             - user_create_aws_resources
             - user_compile_and_test
-      - user_add_config_map_values:
-          requires:
-            - user_push_docker_image
       - user_deploy:
           context: aws-credentials
           requires:
-            - user_add_config_map_values
+            - user_build_and_push_docker_image
   message_service:
     jobs:
       - message_compile_and_test
