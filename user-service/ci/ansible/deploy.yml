@@ -1,0 +1,8 @@
+---
+- import_playbook: values.yml
+- import_playbook: aws-resources.yml
+- hosts: localhost
+  connection: local
+  tasks:
+    - debug:
+        var: git_branch.stdout

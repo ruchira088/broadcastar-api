@@ -20,8 +20,8 @@ object EnumValues {
         }
 
     q"""
-       new com.ruchij.enum.EnumValues[${wtt.tpe.typeSymbol}] {
-          val values: Set[${wtt.tpe.typeSymbol}] = Set(..$enumValues)
+       new com.ruchij.enum.EnumValues[${wtt.tpe}] {
+          val values: Set[${wtt.tpe}] = Set(..$enumValues)
        }
      """
   }

@@ -1,10 +1,10 @@
 package services.user
 
-import com.ruchij.shared.test.bindings.GuiceUtils.application
 import com.ruchij.shared.test.utils.RandomGenerator
 import org.scalatest.{AsyncFlatSpec, MustMatchers}
 import utils.Random.createUserRequestGenerator
 import web.requests.models.CreateUserRequest
+import utils.GuiceUtils.application
 
 import scala.concurrent.Future
 

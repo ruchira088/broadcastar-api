@@ -1,0 +1,33 @@
+---
+- import_playbook: values.yml
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: Create configuration bucket in S3
+      aws_s3:
+        bucket: user-service.ruchij.com
+        mode: create
+    - name: Create shared resources
+      terraform:
+        project_path: ../terraform/shared
+        force_init: yes
+        backend_config:
+          region: ap-southeast-2
+          bucket: user-service.ruchij.com
+          key: user-service.tfstate
+      register: terraform_shared_output
+    - name: Create branch specific resources
+      terraform:
+        project_path: ../terraform/branch
+        force_init: yes
+        variables:
+          branch_name: "{{ git_branch }}"
+        backend_config:
+          region: ap-southeast-2
+          bucket: user-service.ruchij.com
+          key: "{{ git_branch }}/user-service.tfstate"
+      register: terraform_branch_output
+    - set_fact:
+        s3_bucket: "{{ terraform_branch_output.outputs.s3_bucket.value }}"
+        ecr_url: "{{ terraform_shared_output.outputs.ecr_url.value }}"
+

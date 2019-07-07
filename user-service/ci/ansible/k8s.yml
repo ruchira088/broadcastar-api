@@ -1,0 +1,28 @@
+---
+- import_playbook: values.yml
+- import_playbook: aws-resources.yml
+- hosts: localhost
+  connection: local
+  vars:
+    docker_image: "{{ ecr_url }}:{{ git_commit }}"
+    secrets:
+      KAFKA_USERNAME: '{{ lookup("aws_ssm", "/chirper-api/kafka/username") }}'
+      KAFKA_PASSWORD: '{{ lookup("aws_ssm", "/chirper-api/kafka/password") }}'
+      SCHEMA_REGISTRY_USERNAME: '{{ lookup("aws_ssm", "/chirper-api/schema-registry/username") }}'
+      SCHEMA_REGISTRY_PASSWORD: '{{ lookup("aws_ssm", "/chirper-api/schema-registry/password") }}'
+    config_values:
+      S3_BUCKET: "{{ s3_bucket }}"
+  tasks:
+    - file:
+        path: output
+        state: directory
+    - template:
+        src: "{{ item }}"
+        dest: "output/{{ item | basename }}"
+      with_fileglob:
+        - ../k8s/*.yml
+    - s3_sync:
+        bucket: user-service.ruchij.com
+        key_prefix: "{{ git_branch }}/{{ git_commit}}"
+        file_root: output
+

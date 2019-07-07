@@ -28,6 +28,8 @@ object ConfigurationParser {
   implicit val dateTimeParser: ConfigParser[DateTime] =
     (config: Config, path: String) => Try(config.getString(path)).flatMap(string => Try(DateTime.parse(string)))
 
+  implicit val intParser: ConfigParser[Int] = (config: Config, path: String) => Try(config.getInt(path))
+
   implicit def optionParser[A](implicit configParser: ConfigParser[A]): ConfigParser[Option[A]] =
     (config: Config, path: String) =>
       if (!config.hasPath(path)) Success(None) else configParser.parse(config, path).map(Option.apply)

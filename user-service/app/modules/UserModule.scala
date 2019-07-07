@@ -1,9 +1,9 @@
 package modules
 
-import akka.actor.ActorSystem
 import com.google.inject.{AbstractModule, Provides, Singleton, TypeLiteral}
 import com.ruchij.shared.config.KafkaConfiguration
 import com.ruchij.shared.info.BuildInformation
+import com.ruchij.shared.kafka.inmemory.InMemoryKafkaBroker
 import com.ruchij.shared.kafka.producer.{KafkaProducer, KafkaProducerImpl}
 import com.ruchij.shared.utils.SystemUtilities
 import com.ruchij.shared.web.requests.SessionTokenExtractor
@@ -15,7 +15,7 @@ import dao.reset.{ResetPasswordTokenDao, SlickResetPasswordTokenDao}
 import dao.resource.{ResourceInformationDao, SlickResourceInformationDao}
 import dao.user.{DatabaseUserDao, SlickDatabaseUserDao}
 import dao.verification.{EmailVerificationTokenDao, SlickEmailVerificationTokenDao}
-import ec.{BlockingExecutionContext, BlockingExecutionContextImpl}
+import ec.{CpuIntensiveExecutionContext, CpuIntensiveExecutionContextImpl}
 import play.api.libs.json.Json
 import services.authentication.{AuthenticationService, AuthenticationServiceImpl}
 import services.background.{BackgroundService, BackgroundServiceImpl}
@@ -53,11 +53,12 @@ class UserModule extends AbstractModule {
     bind(classOf[SystemUtilities]).toInstance(SystemUtilities)
     bind(classOf[UserService]).to(classOf[UserServiceImpl])
     bind(classOf[CryptographyService]).to(classOf[BCryptService])
-    bind(classOf[BlockingExecutionContext]).to(classOf[BlockingExecutionContextImpl])
+    bind(classOf[CpuIntensiveExecutionContext]).to(classOf[CpuIntensiveExecutionContextImpl])
     bind(classOf[StorageService]).to(classOf[StorageServiceImpl])
     bind(classOf[AuthenticationService]).to(classOf[AuthenticationServiceImpl])
     bind(classOf[FileStore]).to(classOf[LocalFileStore])
     bind(classOf[TriggeringService]).to(classOf[TriggeringServiceImpl])
+//    bind(classOf[KafkaProducer]).to(classOf[InMemoryKafkaBroker])
     bind(classOf[KafkaProducer]).to(classOf[KafkaProducerImpl])
 
     bind(classOf[DatabaseUserDao]).to(classOf[SlickDatabaseUserDao])

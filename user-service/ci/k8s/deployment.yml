@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: chirper-{{{ branch }}}
+  namespace: chirper-{{ git_branch }}
   name: user-service-deployment
 spec:
   selector:
@@ -15,12 +15,20 @@ spec:
     spec:
       containers:
         - name: user-service-container
-          image: {{{ dockerImage }}}
+          image: {{ docker_image }}
           ports:
             - containerPort: 9000
           envFrom:
             - configMapRef:
                 name: user-service-config-map
+          env:
+{% for key, value in secrets.items() %}
+            - name: {{ key }}
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-secrets
+                  key: {{ key }}
+{% endfor %}
           livenessProbe:
             httpGet:
               port: 9000

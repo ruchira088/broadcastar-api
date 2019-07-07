@@ -2,9 +2,10 @@ package com.ruchij.shared.kafka.producer
 
 import akka.actor.ActorSystem
 import akka.kafka.ProducerSettings
+import com.ruchij.shared.kafka.KafkaUtils.{commonClientProperties, schemaRegistryConfiguration}
 import com.ruchij.shared.config.KafkaConfiguration
 import com.ruchij.shared.kafka.KafkaMessage
-import io.confluent.kafka.serializers.{AbstractKafkaAvroSerDeConfig, KafkaAvroSerializer}
+import io.confluent.kafka.serializers.KafkaAvroSerializer
 import javax.inject.{Inject, Singleton}
 import org.apache.kafka.clients.producer.{Callback, Producer, ProducerRecord, RecordMetadata}
 import org.apache.kafka.common.serialization.StringSerializer
@@ -38,10 +39,10 @@ object KafkaProducerImpl {
       new StringSerializer,
       new KafkaAvroSerializer() {
         configure(
-          Map(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG -> kafkaConfiguration.schemaRegistryUrl).asJava,
+          schemaRegistryConfiguration(kafkaConfiguration).asJava,
           false
         )
       }
     )
-      .withBootstrapServers(kafkaConfiguration.bootstrapServers)
+      .withProperties(commonClientProperties(kafkaConfiguration))
 }

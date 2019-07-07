@@ -1,6 +1,5 @@
 logs
 target
-/.chirper-user.db
 /.idea
 /.idea_modules
 /.classpath
@@ -8,5 +7,6 @@ target
 /.settings
 /RUNNING_PID
 .DS_Store
-/file-storage/*
 .terraform
+/user-service/ci/ansible/output
+/set-secrets.sh

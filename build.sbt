@@ -61,6 +61,14 @@ lazy val messageService =
     )
     .dependsOn(shared % "compile->compile;test->test")
 
+lazy val initialization =
+  (project in file("./initialization"))
+    .settings(
+      name := "initialization",
+      version := "0.0.1"
+    )
+    .dependsOn(shared)
+
 lazy val shared =
   (project in file("./shared"))
     .enablePlugins(PlayScala)
@@ -72,6 +80,7 @@ lazy val shared =
         ws,
         scalaz,
         jodaTime,
+        scalaLogging,
         commonsValidator,
         akkaActor,
         akkaStream,
