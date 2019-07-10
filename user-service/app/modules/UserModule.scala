@@ -20,9 +20,6 @@ import play.api.libs.json.Json
 import services.authentication.{AuthenticationService, AuthenticationServiceImpl}
 import services.background.{BackgroundService, BackgroundServiceImpl}
 import services.crypto.{BCryptService, CryptographyService}
-import services.notification.NotificationService
-import services.notification.console.ConsoleNotificationService
-import services.notification.models.NotificationType
 import services.storage.store.{FileStore, LocalFileStore}
 import services.storage.{StorageService, StorageServiceImpl}
 import services.triggering.{TriggeringService, TriggeringServiceImpl}
@@ -58,8 +55,8 @@ class UserModule extends AbstractModule {
     bind(classOf[AuthenticationService]).to(classOf[AuthenticationServiceImpl])
     bind(classOf[FileStore]).to(classOf[LocalFileStore])
     bind(classOf[TriggeringService]).to(classOf[TriggeringServiceImpl])
-//    bind(classOf[KafkaProducer]).to(classOf[InMemoryKafkaBroker])
-    bind(classOf[KafkaProducer]).to(classOf[KafkaProducerImpl])
+    bind(classOf[KafkaProducer]).to(classOf[InMemoryKafkaBroker])
+//    bind(classOf[KafkaProducer]).to(classOf[KafkaProducerImpl])
 
     bind(classOf[DatabaseUserDao]).to(classOf[SlickDatabaseUserDao])
     bind(classOf[ResourceInformationDao]).to(classOf[SlickResourceInformationDao])
@@ -69,7 +66,6 @@ class UserModule extends AbstractModule {
     bind(classOf[OffsetDao]).to(classOf[SlickOffsetDao])
 
     bind(new TypeLiteral[SessionTokenExtractor[String]] {}).toInstance(SessionTokenExtractor)
-    bind(new TypeLiteral[NotificationService[NotificationType.Console.type]] {}).to(classOf[ConsoleNotificationService])
   }
 
   @Singleton
@@ -79,7 +75,7 @@ class UserModule extends AbstractModule {
   @Singleton
   @Provides
   def backgroundService(backgroundServiceImpl: BackgroundServiceImpl)(implicit executionContext: ExecutionContext): BackgroundService = {
-    backgroundServiceImpl.sendNewUsersToKafka()
+    backgroundServiceImpl.start()
       .recoverWith {
         case throwable =>
           println(throwable)

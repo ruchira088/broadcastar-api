@@ -2,9 +2,9 @@ package dao.verification
 
 import java.util.UUID
 
+import com.ruchij.shared.models.EmailVerificationToken
 import com.ruchij.shared.utils.MonadicUtils.OptionTWrapper
 import com.ruchij.shared.utils.SystemUtilities
-import dao.verification.models.EmailVerificationToken
 import exceptions.FatalDatabaseException
 import javax.inject.{Inject, Singleton}
 import org.joda.time.DateTime
@@ -26,7 +26,8 @@ class SlickEmailVerificationTokenDao @Inject()(override protected val dbConfigPr
   import dao.SlickMappedColumns.dateTimeMappedColumn
   import dbConfig.profile.api._
 
-  class EmailVerificationTokenTable(tag: Tag) extends Table[EmailVerificationToken](tag, SlickEmailVerificationTokenDao.TABLE_NAME) {
+  class EmailVerificationTokenTable(tag: Tag)
+      extends Table[EmailVerificationToken](tag, SlickEmailVerificationTokenDao.TABLE_NAME) {
     def userId: Rep[UUID] = column[UUID]("user_id")
     def secret: Rep[UUID] = column[UUID]("secret")
     def email: Rep[String] = column[String]("email")
@@ -46,12 +47,22 @@ class SlickEmailVerificationTokenDao @Inject()(override protected val dbConfigPr
   )(implicit executionContext: ExecutionContext): Future[EmailVerificationToken] =
     db.run(emailVerificationTokens += emailVerificationToken)
       .flatMap { _ =>
-        getByUserIdAndSecret(emailVerificationToken.userId, emailVerificationToken.secret) ifEmpty Future.failed(FatalDatabaseException)
+        getByUserIdAndSecret(emailVerificationToken.userId, emailVerificationToken.secret) ifEmpty Future.failed(
+          FatalDatabaseException
+        )
       }
 
-  override def getByUserIdAndSecret(
-    userId: UUID, secret: UUID
-  )(implicit executionContext: ExecutionContext): OptionT[Future, EmailVerificationToken] =
+  override def getByUserId(
+    userId: UUID
+  )(implicit executionContext: ExecutionContext): Future[List[EmailVerificationToken]] =
+    db.run {
+        emailVerificationTokens.filter(_.userId === userId).sortBy(_.createdAt.desc).result
+      }
+      .map(_.toList)
+
+  private def getByUserIdAndSecret(userId: UUID, secret: UUID)(
+    implicit executionContext: ExecutionContext
+  ): OptionT[Future, EmailVerificationToken] =
     OptionT {
       db.run {
           emailVerificationTokens
@@ -80,8 +91,9 @@ class SlickEmailVerificationTokenDao @Inject()(override protected val dbConfigPr
                   .update(Some(systemUtilities.currentTime()))
               }
               .map(Some.apply)
-          }
-            .flatMap { _ => verifyEmail(userId, secret) }
+          }.flatMap { _ =>
+              verifyEmail(userId, secret)
+            }
         }(_ => OptionT.some[Future, EmailVerificationToken](result))
       }
 }

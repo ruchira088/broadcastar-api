@@ -3,30 +3,39 @@ package services.background
 import akka.Done
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
-import com.ruchij.shared.kafka.KafkaMessage
+import com.ruchij.shared.kafka.{KafkaMessage, KafkaTopic}
 import com.ruchij.shared.kafka.producer.KafkaProducer
 import dao.user.models.DatabaseUser
 import javax.inject.{Inject, Singleton}
+import org.apache.kafka.clients.producer.RecordMetadata
 import services.triggering.TriggeringService
+import services.user.UserService
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class BackgroundServiceImpl @Inject()(triggeringService: TriggeringService, kafkaProducer: KafkaProducer)(
+class BackgroundServiceImpl @Inject()(triggeringService: TriggeringService, userService: UserService, kafkaProducer: KafkaProducer)(
   implicit materializer: Materializer
 ) extends BackgroundService {
 
-  override def sendNewUsersToKafka()(implicit executionContext: ExecutionContext): Future[Done] =
+  def publishNewUser(databaseUser: DatabaseUser)(implicit executionContext: ExecutionContext): Future[RecordMetadata] =
+    kafkaProducer.publish(KafkaMessage(DatabaseUser.toUser(databaseUser)))
+
+  def verificationEmail(databaseUser: DatabaseUser)(implicit executionContext: ExecutionContext): Future[RecordMetadata] =
+    userService.getEmailVerificationToken(databaseUser.userId)
+      .flatMap {
+        emailVerificationToken =>
+          kafkaProducer.publish(KafkaMessage(emailVerificationToken))
+      }
+
+  override def start()(implicit executionContext: ExecutionContext): Future[Done] =
     triggeringService
       .userCreated()
-      .mapAsync(1) { databaseUser =>
-        kafkaProducer
-          .publish {
-            KafkaMessage(DatabaseUser.toUser(databaseUser))
-          }
-          .flatMap { recordMetadata =>
-            triggeringService.commitUserCreated(databaseUser)
-          }
+      .mapAsync(parallelism = 1) { databaseUser =>
+        Future.sequence {
+          List(publishNewUser(databaseUser), verificationEmail(databaseUser))
+        }
+          .flatMap(_ => triggeringService.commitUserCreated(databaseUser))
       }
       .runWith(Sink.ignore)
 }

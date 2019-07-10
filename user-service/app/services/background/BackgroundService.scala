@@ -5,5 +5,5 @@ import akka.Done
 import scala.concurrent.{ExecutionContext, Future}
 
 trait BackgroundService {
-  def sendNewUsersToKafka()(implicit executionContext: ExecutionContext): Future[Done]
+  def start()(implicit executionContext: ExecutionContext): Future[Done]
 }

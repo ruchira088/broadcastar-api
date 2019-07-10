@@ -1,4 +1,4 @@
-package dao.verification.models
+package com.ruchij.shared.models
 
 import java.util.UUID
 

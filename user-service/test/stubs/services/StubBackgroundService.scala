@@ -8,6 +8,5 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class StubBackgroundService extends BackgroundService {
-  override def sendNewUsersToKafka()(implicit executionContext: ExecutionContext): Future[Done] =
-    Future.successful(Done)
+  override def start()(implicit executionContext: ExecutionContext): Future[Done] = Future.successful(Done)
 }

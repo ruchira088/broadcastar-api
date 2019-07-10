@@ -3,21 +3,17 @@ package services.user
 import java.util.UUID
 
 import com.ruchij.shared.exceptions.ExistingResourceException
+import com.ruchij.shared.exceptions.aggregation.AggregatedExistingResourceException
+import com.ruchij.shared.models.{EmailVerificationToken, User}
 import com.ruchij.shared.utils.MonadicUtils._
 import com.ruchij.shared.utils.SystemUtilities
 import dao.user.DatabaseUserDao
 import dao.user.models.DatabaseUser
 import dao.verification.EmailVerificationTokenDao
-import dao.verification.models.EmailVerificationToken
 import exceptions._
-import com.ruchij.shared.exceptions.aggregation.AggregatedExistingResourceException
-import com.ruchij.shared.models.User
 import javax.inject.{Inject, Singleton}
 import scalaz.std.scalaFuture.futureInstance
 import services.crypto.CryptographyService
-import services.notification.NotificationService
-import services.notification.models.NotificationType.Console
-import services.notification.console.models.ConsoleNotificationMessage._
 import web.requests.models.CreateUserRequest
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -26,7 +22,6 @@ import scala.concurrent.{ExecutionContext, Future}
 class UserServiceImpl @Inject()(
   databaseUserDao: DatabaseUserDao,
   emailVerificationTokenDao: EmailVerificationTokenDao,
-  notificationService: NotificationService[Console.type],
   cryptographyService: CryptographyService
 )(implicit systemUtilities: SystemUtilities)
     extends UserService {
@@ -53,19 +48,19 @@ class UserServiceImpl @Inject()(
 
       saltedHashedPassword <- cryptographyService.hashPassword(createUserRequest.password)
 
-      persistedUser <- databaseUserDao.insert(DatabaseUser.from(createUserRequest, saltedHashedPassword))
+      databaseUser = DatabaseUser.from(createUserRequest, saltedHashedPassword)
 
       emailVerificationToken <- emailVerificationTokenDao.insert(
         EmailVerificationToken(
-          persistedUser.userId,
+          databaseUser.userId,
           systemUtilities.randomUuid(),
-          persistedUser.email,
+          databaseUser.email,
           systemUtilities.currentTime(),
           None
         )
       )
 
-      _ <- notificationService.send(emailVerificationToken)
+      persistedUser <- databaseUserDao.insert(databaseUser)
 
     } yield DatabaseUser.toUser(persistedUser)
 
@@ -88,4 +83,14 @@ class UserServiceImpl @Inject()(
     withDefault(Future.failed(ResourceNotFoundException(s"User not found (id = $userId)"))) {
       databaseUserDao.getByUserId(userId).map(DatabaseUser.toUser)
     }
+
+  override def getEmailVerificationToken(userId: UUID)(implicit executionContext: ExecutionContext): Future[EmailVerificationToken] =
+    emailVerificationTokenDao.getByUserId(userId)
+      .flatMap {
+        _.headOption.fold[Future[EmailVerificationToken]](
+          Future.failed(ResourceNotFoundException(s"Email verification tokens not found for user (id = $userId)"))
+        ) {
+          Future.successful
+        }
+      }
 }
