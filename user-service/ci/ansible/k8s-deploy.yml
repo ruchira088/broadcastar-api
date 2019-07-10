@@ -14,12 +14,12 @@
     config_values:
       S3_BUCKET: "{{ s3_bucket }}"
   tasks:
-    - name: Creating an output directory
+    - name: Create output directory
       file:
         path: output
         state: directory
 
-    - name: Rendering the K8s resource files
+    - name: Render K8s resource files
       template:
         src: "{{ item }}"
         dest: "output/{{ item | basename }}"

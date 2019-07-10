@@ -3,7 +3,7 @@ package web.responses
 import com.ruchij.shared.exceptions.aggregation.{AggregatedExistingResourceException, AggregatedValidationException}
 import com.ruchij.shared.web.responses.models.ExceptionResponse
 import com.ruchij.shared.web.responses.models.ExceptionResponse.errorResponse
-import exceptions.{ExistingEmailException, ExistingUsernameException, InvalidCredentialsException, ResourceNotFoundException}
+import exceptions.{ExistingEmailException, ExistingUsernameException, InvalidCredentialsException, ResourceNotFoundException, UnverifiedEmailException}
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc.Results._
 import play.api.mvc.{Result, Results}
@@ -20,6 +20,8 @@ object ResponseCreator {
 
   val exceptionMapper: PartialFunction[Throwable, Result] = {
     case existingUsernameException: ExistingUsernameException => Conflict(errorResponse(existingUsernameException))
+
+    case unverifiedEmailException: UnverifiedEmailException => Unauthorized(errorResponse(unverifiedEmailException))
 
     case existingEmailException: ExistingEmailException => Conflict(errorResponse(existingEmailException))
 
