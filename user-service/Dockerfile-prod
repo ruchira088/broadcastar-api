@@ -30,4 +30,4 @@ EXPOSE 9000
 
 ENTRYPOINT ["bash"]
 
-CMD ["/opt/user-service/bin/user-service"]
+CMD ["/opt/user-service/bin/user-service", "-Dconfig.file=conf/application.postgresql.conf"]

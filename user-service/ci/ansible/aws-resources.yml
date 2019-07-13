@@ -32,5 +32,7 @@
 
     - set_fact:
         s3_bucket: "{{ terraform_branch_output.outputs.s3_bucket.value }}"
+        db_url: "{{ terraform_branch_output.outputs.db_endpoint.value }}/{{ terraform_branch_output.outputs.db_name.value }}"
         ecr_url: "{{ terraform_shared_output.outputs.ecr_url.value }}"
+
 
