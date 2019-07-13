@@ -5,7 +5,7 @@ import java.util.UUID
 import com.ruchij.shared.exceptions.ExistingResourceException
 import com.ruchij.shared.exceptions.aggregation.AggregatedExistingResourceException
 import com.ruchij.shared.models.{EmailVerificationToken, User}
-import com.ruchij.shared.utils.MonadicUtils._
+import com.ruchij.shared.monads.MonadicUtils._
 import com.ruchij.shared.utils.SystemUtilities
 import dao.user.DatabaseUserDao
 import dao.user.models.DatabaseUser

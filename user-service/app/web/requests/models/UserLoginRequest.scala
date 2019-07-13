@@ -1,7 +1,7 @@
 package web.requests.models
 
 import com.ruchij.shared.exceptions.ValidationException
-import com.ruchij.shared.utils.MonadicUtils._
+import com.ruchij.shared.monads.MonadicUtils._
 import com.ruchij.shared.web.requests.Validator
 import play.api.libs.json.{Json, OFormat}
 

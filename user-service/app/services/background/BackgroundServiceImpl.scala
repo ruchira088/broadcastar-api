@@ -3,6 +3,7 @@ package services.background
 import akka.Done
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
+import com.ruchij.shared.kafka.models.VerificationEmail
 import com.ruchij.shared.kafka.{KafkaMessage, KafkaTopic}
 import com.ruchij.shared.kafka.producer.KafkaProducer
 import dao.user.models.DatabaseUser
@@ -25,7 +26,7 @@ class BackgroundServiceImpl @Inject()(triggeringService: TriggeringService, user
     userService.getEmailVerificationToken(databaseUser.userId)
       .flatMap {
         emailVerificationToken =>
-          kafkaProducer.publish(KafkaMessage(emailVerificationToken))
+          kafkaProducer.publish(KafkaMessage(VerificationEmail(emailVerificationToken, DatabaseUser.toUser(databaseUser))))
       }
 
   override def start()(implicit executionContext: ExecutionContext): Future[Done] =

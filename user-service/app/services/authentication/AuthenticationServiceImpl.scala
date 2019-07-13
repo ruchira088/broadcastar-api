@@ -3,7 +3,7 @@ package services.authentication
 import java.util.UUID
 
 import com.ruchij.shared.models.User
-import com.ruchij.shared.utils.MonadicUtils._
+import com.ruchij.shared.monads.MonadicUtils._
 import com.ruchij.shared.utils.SystemUtilities
 import config.SessionConfiguration
 import dao.authentication.AuthenticationTokenDao

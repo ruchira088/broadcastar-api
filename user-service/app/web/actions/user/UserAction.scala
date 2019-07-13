@@ -2,7 +2,7 @@ package web.actions.user
 
 import java.util.UUID
 
-import com.ruchij.shared.utils.MonadicUtils.recoverWith
+import com.ruchij.shared.monads.MonadicUtils.recoverWith
 import javax.inject.Inject
 import play.api.mvc._
 import scalaz.std.scalaFuture.futureInstance

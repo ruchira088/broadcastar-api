@@ -5,6 +5,7 @@ import com.ruchij.shared.config.KafkaConfiguration
 import com.ruchij.shared.info.BuildInformation
 import com.ruchij.shared.kafka.inmemory.InMemoryKafkaBroker
 import com.ruchij.shared.kafka.producer.{KafkaProducer, KafkaProducerImpl}
+import com.ruchij.shared.monads.MonadicUtils
 import com.ruchij.shared.utils.SystemUtilities
 import com.ruchij.shared.web.requests.SessionTokenExtractor
 import com.typesafe.config.ConfigFactory
@@ -32,7 +33,10 @@ import scala.language.postfixOps
 class UserModule extends AbstractModule {
 
   override def configure(): Unit = {
-    val applicationConfiguration = ApplicationConfiguration.parse(ConfigFactory.load()).get
+    val applicationConfiguration =
+      MonadicUtils.unsafe {
+        ApplicationConfiguration.parse(ConfigFactory.load())
+      }
 
     println {
       Json.prettyPrint {
@@ -55,8 +59,8 @@ class UserModule extends AbstractModule {
     bind(classOf[AuthenticationService]).to(classOf[AuthenticationServiceImpl])
     bind(classOf[FileStore]).to(classOf[LocalFileStore])
     bind(classOf[TriggeringService]).to(classOf[TriggeringServiceImpl])
-    bind(classOf[KafkaProducer]).to(classOf[InMemoryKafkaBroker])
-//    bind(classOf[KafkaProducer]).to(classOf[KafkaProducerImpl])
+//    bind(classOf[KafkaProducer]).to(classOf[InMemoryKafkaBroker])
+    bind(classOf[KafkaProducer]).to(classOf[KafkaProducerImpl])
 
     bind(classOf[DatabaseUserDao]).to(classOf[SlickDatabaseUserDao])
     bind(classOf[ResourceInformationDao]).to(classOf[SlickResourceInformationDao])

@@ -23,7 +23,7 @@ object Dependencies {
 
   lazy val commonsValidator = "commons-validator" % "commons-validator" % "1.6"
 
-  lazy val s3 = "software.amazon.awssdk" % "s3" % "2.7.0"
+  lazy val s3 = "software.amazon.awssdk" % "s3" % "2.7.5"
 
   lazy val typesafeConfig = "com.typesafe" % "config" % "1.3.4"
 

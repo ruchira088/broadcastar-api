@@ -3,7 +3,7 @@ package dao.verification
 import java.util.UUID
 
 import com.ruchij.shared.models.EmailVerificationToken
-import com.ruchij.shared.utils.MonadicUtils.OptionTWrapper
+import com.ruchij.shared.monads.MonadicUtils.OptionTWrapper
 import com.ruchij.shared.utils.SystemUtilities
 import exceptions.FatalDatabaseException
 import javax.inject.{Inject, Singleton}

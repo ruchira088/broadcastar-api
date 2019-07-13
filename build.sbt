@@ -97,6 +97,15 @@ lazy val shared =
     )
     .dependsOn(macros)
 
+lazy val emailService = 
+  (project in file("./email-service"))
+    .settings(
+      name := "email-service",
+      version := "0.0.1",
+      libraryDependencies ++= Seq(akkaActor, akkaStream, typesafeConfig)
+    )
+    .dependsOn(shared)
+
 lazy val playground =
   (project in file("./playground"))
     .settings(name := "playground", version := "0.0.1", libraryDependencies ++= Seq(faker, logback, scalaLogging))

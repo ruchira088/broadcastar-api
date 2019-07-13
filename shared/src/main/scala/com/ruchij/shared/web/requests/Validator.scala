@@ -2,7 +2,7 @@ package com.ruchij.shared.web.requests
 
 import com.ruchij.shared.exceptions.ValidationException
 import com.ruchij.shared.exceptions.aggregation.AggregatedValidationException
-import com.ruchij.shared.utils.MonadicUtils._
+import com.ruchij.shared.monads.MonadicUtils._
 import org.apache.commons.validator.routines.EmailValidator
 
 import scala.util.{Failure, Success, Try}

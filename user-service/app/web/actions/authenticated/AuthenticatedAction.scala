@@ -1,6 +1,6 @@
 package web.actions.authenticated
 
-import com.ruchij.shared.utils.MonadicUtils.recoverWith
+import com.ruchij.shared.monads.MonadicUtils.recoverWith
 import com.ruchij.shared.web.requests.SessionTokenExtractor
 import exceptions.InvalidCredentialsException
 import javax.inject.Inject

@@ -1,4 +1,4 @@
-package com.ruchij.shared.utils
+package com.ruchij.shared.monads
 
 import scalaz.{Functor, Monad, MonadError, OptionT}
 
@@ -66,4 +66,14 @@ object MonadicUtils {
   def recoverWith[M[_], A, Error](recoveryFunction: PartialFunction[Error, A])(monad: M[A])(implicit monadError: MonadError[M, Error]): M[A] =
     monadError.handleError(monad)(recoveryFunction.andThen(value => monadError.pure(value)))
 
+  def unsafe[M[_], A](value: => M[A])(implicit unsafeMonadCopoint: UnsafeMonadCopoint[M]): A =
+    UnsafeMonadCopoint.tryUnsafeMonadCopoint
+      .copoint {
+        Try { unsafeMonadCopoint.copoint(value) }
+          .recoverWith {
+            case throwable =>
+              throwable.printStackTrace()
+              Failure(throwable)
+          }
+      }
 }

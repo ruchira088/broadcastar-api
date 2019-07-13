@@ -2,7 +2,7 @@ package dao.reset
 
 import java.util.UUID
 
-import com.ruchij.shared.utils.MonadicUtils.OptionTWrapper
+import com.ruchij.shared.monads.MonadicUtils.OptionTWrapper
 import dao.reset.models.ResetPasswordToken
 import exceptions.FatalDatabaseException
 import javax.inject.{Inject, Singleton}
