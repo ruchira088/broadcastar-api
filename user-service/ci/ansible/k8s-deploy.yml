@@ -34,22 +34,22 @@
         bucket: user-service.ruchij.com
         key_prefix: "{{ git_branch }}/{{ git_commit}}"
         file_root: output
-#
-#    - name: Fetch kubectl configuration
-#      shell: KOPS_STATE_STORE="{{ kops_state_store }}" kops export kubecfg k8s.ruchij.com
-#
-#    - name: Create Namespace
-#      command: kubectl apply -f output/namespace.yml
-#
-#    - name: Set ConfigMap
-#      command: kubectl apply -f output/config-map.yml
-#
-#    - name: Set Secrets
-#      command: kubectl apply -f output/secrets.yml
-#
-#    - name: Deploy to K8s cluster
-#      command: kubectl apply -f output/
-#
-#    - name: Wait for successful deployment
-#      command: kubectl rollout status deployment/user-service-deployment -n chirper-{{ git_branch }}
+
+    - name: Fetch kubectl configuration
+      shell: KOPS_STATE_STORE="{{ kops_state_store }}" kops export kubecfg k8s.ruchij.com
+
+    - name: Create Namespace
+      command: kubectl apply -f output/namespace.yml
+
+    - name: Set ConfigMap
+      command: kubectl apply -f output/config-map.yml
+
+    - name: Set Secrets
+      command: kubectl apply -f output/secrets.yml
+
+    - name: Deploy to K8s cluster
+      command: kubectl apply -f output/
+
+    - name: Wait for successful deployment
+      command: kubectl rollout status deployment/user-service-deployment -n chirper-{{ git_branch }}
 
