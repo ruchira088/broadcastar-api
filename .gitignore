@@ -9,4 +9,4 @@ target
 .DS_Store
 .terraform
 /user-service/ci/ansible/output
-/set-secrets.sh
+/secrets.env

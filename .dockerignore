@@ -5,4 +5,4 @@
 /.settings
 /RUNNING_PID
 .DS_Store
-/set-secrets.sh
+/secrets.env

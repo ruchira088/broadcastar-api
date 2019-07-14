@@ -27,8 +27,8 @@ object App {
 
     kafkaConsumer.subscribe(KafkaTopic.EmailVerification)
       .mapAsync(1) {
-        case (emailVerificationToken, committableOffset) =>
-          println(emailVerificationToken)
+        case (verificationEmail, committableOffset) =>
+          println(verificationEmail)
           committableOffset.commitScaladsl()
       }
       .runWith(Sink.ignore)
