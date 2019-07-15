@@ -31,7 +31,7 @@
 
     - name: Upload K8s resource files to S3
       s3_sync:
-        bucket: user-service.ruchij.com
+        bucket: user-service.chirper.ruchij.com
         key_prefix: "{{ git_branch }}/{{ git_commit}}"
         file_root: output
 

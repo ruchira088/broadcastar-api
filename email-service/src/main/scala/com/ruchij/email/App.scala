@@ -9,6 +9,7 @@ import com.ruchij.shared.kafka.consumer.{KafkaConsumer, KafkaConsumerImpl}
 import com.ruchij.shared.monads.MonadicUtils
 import com.ruchij.shared.utils.SystemUtilities
 import com.typesafe.config.ConfigFactory
+import courier.Mailer
 
 import scala.concurrent.ExecutionContextExecutor
 

@@ -1,3 +1,4 @@
+logs
 /.idea
 /.idea_modules
 /.classpath
@@ -5,4 +6,6 @@
 /.settings
 /RUNNING_PID
 .DS_Store
+.terraform
+/user-service/ci/ansible/output
 /secrets.env

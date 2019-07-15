@@ -5,20 +5,20 @@
   tasks:
     - name: Create configuration bucket in S3
       aws_s3:
-        bucket: user-service.ruchij.com
+        bucket: user-service.chirper.ruchij.com
         mode: create
 
-    - name: Create shared resources
+    - name: Create shared AWS resources
       terraform:
         project_path: ../terraform/shared
         force_init: yes
         backend_config:
           region: ap-southeast-2
-          bucket: user-service.ruchij.com
+          bucket: user-service.chirper.ruchij.com
           key: user-service.tfstate
       register: terraform_shared_output
 
-    - name: Create branch specific resources
+    - name: Create branch specific AWS resources
       terraform:
         project_path: ../terraform/branch
         force_init: yes
@@ -26,7 +26,7 @@
           branch_name: "{{ git_branch }}"
         backend_config:
           region: ap-southeast-2
-          bucket: user-service.ruchij.com
+          bucket: user-service.chirper.ruchij.com
           key: "{{ git_branch }}/user-service.tfstate"
       register: terraform_branch_output
 

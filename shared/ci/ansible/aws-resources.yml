@@ -1,0 +1,18 @@
+---
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: Create configuration bucket in S3
+      aws_s3:
+        bucket: shared.chirper.ruchij.com
+        mode: create
+
+    - name: Create shared AWS resources
+      terraform:
+        project_path: ../terraform/shared
+        force_init: yes
+        backend_config:
+          region: ap-southeast-2
+          bucket: shared.chirper.ruchij.com
+          key: shared.tfstate
+

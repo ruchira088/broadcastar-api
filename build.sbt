@@ -97,7 +97,7 @@ lazy val shared =
     )
     .dependsOn(macros)
 
-lazy val emailService = 
+lazy val emailService =
   (project in file("./email-service"))
     .settings(
       name := "email-service",

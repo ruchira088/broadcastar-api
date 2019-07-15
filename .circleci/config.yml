@@ -90,6 +90,7 @@ executors:
   ubuntu:
     docker:
       - image: ubuntu:18.04
+
   open-jdk:
     docker:
       - image: openjdk:8-jdk
@@ -118,17 +119,25 @@ commands:
             - ~/.sbt
             - ~/.ivy2
 
-jobs:
-  user_create_aws_resources:
-    executor: ubuntu
+  create_aws_resources:
+    parameters:
+      project:
+        type: string
     steps:
       - run: *git
       - run: *ansible
       - run: *terraform
       - checkout
       - run:
-          name: Apply Terraform files
-          command: ansible-playbook user-service/ci/ansible/aws-resources.yml
+          name: Create AWS resources
+          command: ansible-playbook << parameters.project >>/ci/ansible/aws-resources.yml
+
+jobs:
+  user_create_aws_resources:
+    executor: ubuntu
+    steps:
+      - create_aws_resources:
+          project: user-service
 
   user_compile_and_test:
     executor: open-jdk
@@ -174,22 +183,38 @@ jobs:
       - compile_and_test:
           sbt_project: messageService
 
+  shared_create_aws_resources:
+    executor: ubuntu
+    steps:
+      - create_aws_resources:
+          project: shared
+
 workflows:
   version: 2
   user_service:
     jobs:
       - user_create_aws_resources:
           context: aws-credentials
+
       - user_compile_and_test
+
       - user_build_and_push_docker_image:
           context: aws-credentials
           requires:
             - user_create_aws_resources
             - user_compile_and_test
+
       - user_deploy:
           context: aws-credentials
           requires:
             - user_build_and_push_docker_image
+
   message_service:
     jobs:
       - message_compile_and_test
+
+  shared:
+    jobs:
+      - shared_create_aws_resources
+
+

@@ -24,6 +24,8 @@ services:
       - "/opt/chirper-api/macros/target"
       - "/root/.sbt/1.0/plugins"
       - "~/.aws:/root/.aws"
+    env_file:
+      - secrets.env
     environment:
       POSTGRESQL_URL: "jdbc:postgresql://postgresql-database:5432/user-service"
       POSTGRESQL_USER: "my-user"

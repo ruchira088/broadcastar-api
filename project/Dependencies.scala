@@ -10,7 +10,7 @@ object Dependencies {
   lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.2.28"
 
   lazy val playSlick = "com.typesafe.play" %% "play-slick" % "4.0.2"
-  
+
   lazy val playSlickEvolutions = "com.typesafe.play" %% "play-slick-evolutions" % "4.0.2"
 
   lazy val postgresql = "org.postgresql" % "postgresql" % "42.2.6"
@@ -36,11 +36,11 @@ object Dependencies {
   lazy val kafkaAvroSerializer = "io.confluent" % "kafka-avro-serializer" % "5.2.2"
 
   lazy val avro4s = "com.sksamuel.avro4s" %% "avro4s-core" % "2.0.4"
-  
+
   lazy val akkaStreamKafka = "com.typesafe.akka" %% "akka-stream-kafka" % "1.0.4"
-  
+
   lazy val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.2.3"
-  
+
   lazy val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2"
 
   lazy val scalaTestPlusPlay = "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3"
