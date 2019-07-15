@@ -215,6 +215,7 @@ workflows:
 
   shared:
     jobs:
-      - shared_create_aws_resources
+      - shared_create_aws_resources:
+          context: aws-credentials
 
 
