@@ -33,23 +33,25 @@ import scala.language.postfixOps
 class UserModule extends AbstractModule {
 
   override def configure(): Unit = {
-    val applicationConfiguration =
-      MonadicUtils.unsafe {
-        ApplicationConfiguration.parse(ConfigFactory.load())
-      }
+    ApplicationConfiguration.parse(ConfigFactory.load())
+        .fold(
+          addError,
+          applicationConfiguration => {
 
-    println {
-      Json.prettyPrint {
-        Json.toJson(applicationConfiguration)
-      }
-    }
+            println {
+              Json.prettyPrint {
+                Json.toJson(applicationConfiguration)
+              }
+            }
 
-    bind(classOf[BuildInformation]).toInstance(applicationConfiguration.applicationInformation)
-    bind(classOf[SessionConfiguration]).toInstance(applicationConfiguration.authenticationConfiguration)
-    bind(classOf[LocalFileStoreConfiguration]).toInstance(applicationConfiguration.localFileStoreConfiguration)
-    bind(classOf[S3Configuration]).toInstance(applicationConfiguration.s3Configuration)
-    bind(classOf[TriggerConfiguration]).toInstance(applicationConfiguration.triggerConfiguration)
-    bind(classOf[KafkaConfiguration]).toInstance(applicationConfiguration.kafkaConfiguration)
+            bind(classOf[BuildInformation]).toInstance(applicationConfiguration.applicationInformation)
+            bind(classOf[SessionConfiguration]).toInstance(applicationConfiguration.authenticationConfiguration)
+            bind(classOf[LocalFileStoreConfiguration]).toInstance(applicationConfiguration.localFileStoreConfiguration)
+            bind(classOf[S3Configuration]).toInstance(applicationConfiguration.s3Configuration)
+            bind(classOf[TriggerConfiguration]).toInstance(applicationConfiguration.triggerConfiguration)
+            bind(classOf[KafkaConfiguration]).toInstance(applicationConfiguration.kafkaConfiguration)
+          }
+        )
 
     bind(classOf[SystemUtilities]).toInstance(SystemUtilities)
     bind(classOf[UserService]).to(classOf[UserServiceImpl])
