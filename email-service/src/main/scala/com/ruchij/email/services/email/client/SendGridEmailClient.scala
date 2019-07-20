@@ -1,5 +1,6 @@
 package com.ruchij.email.services.email.client
 
+import com.ruchij.email.Dependencies
 import com.ruchij.email.services.email.EmailSerializer
 import com.ruchij.email.services.email.models.Email
 import com.ruchij.shared.ec.IOExecutionContext
@@ -10,6 +11,9 @@ import scalaz.ReaderT
 import scala.concurrent.{ExecutionContext, Future}
 
 object SendGridEmailClient extends EmailClient[(SendGrid, IOExecutionContext), Mail, Response] {
+  override def local(dependencies: Dependencies): (SendGrid, IOExecutionContext) =
+    (dependencies.sendGrid, dependencies.ioExecutionContext)
+
   override def send[A](email: Email[A])(implicit emailSerializer: EmailSerializer[A, Mail], executionContext: ExecutionContext): ReaderT[Future, (SendGrid, IOExecutionContext), Response] =
     ReaderT {
       case (sendgrid, ioExecutionContext) =>

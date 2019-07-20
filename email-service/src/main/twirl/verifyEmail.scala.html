@@ -1,0 +1,33 @@
+@import java.util.UUID
+
+@(firstName: String, secret: UUID)
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Welcome to Chirper</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    </head>
+    <body>
+        <header>
+            <h1>Welcome the Chirper</h1>
+        </header>
+
+        <section>
+            <h3>Hello @firstName</h3>
+            <p>
+                You are just one step away.
+            </p>
+            <p>
+                Click on the button below to confirm your email address.
+            </p>
+            <div>
+                <a href="">Confirm Email Address</a>
+            </div>
+        </section>
+
+        <footer>
+
+        </footer>
+    </body>
+</html>

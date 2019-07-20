@@ -117,8 +117,8 @@ lazy val macros =
   (project in file("./macros"))
     .settings(name := "macros", version := "0.0.1", libraryDependencies ++= Seq(scalaReflect, typesafeConfig, jodaTime))
 
-addCommandAlias("cleanAll", "; emailService/clean; messageService/clean; userService/clean; shared/clean; macros/clean")
-addCommandAlias("compileAll", "; macros/compile; shared/compile; userService/compile; messageService/compile; emailService/compile")
+addCommandAlias("cleanAll", "; playground/clean; initialization/clean; emailService/clean; messageService/clean; userService/clean; shared/clean; macros/clean")
+addCommandAlias("compileAll", "; macros/compile; shared/compile; userService/compile; messageService/compile; emailService/compile; initialization/compile; playground/compile")
 addCommandAlias("testWithCoverage", "; coverage; userService/test; messageService/test; emailService/test; coverageReport")
 
 addCommandAlias(

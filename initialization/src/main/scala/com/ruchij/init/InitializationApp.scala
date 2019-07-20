@@ -5,6 +5,7 @@ import com.ruchij.shared.config.KafkaConfiguration
 import com.ruchij.shared.ec.IOExecutionContextImpl
 import com.ruchij.shared.kafka.KafkaTopic
 import com.ruchij.shared.kafka.admin.{KafkaAdministrator, KafkaAdministratorImpl}
+import com.ruchij.shared.monads.MonadicUtils
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.Logger
 
@@ -19,7 +20,7 @@ object InitializationApp {
     implicit val actorSystem: ActorSystem = ActorSystem("initialization-app")
     implicit val ioExecutionContext: IOExecutionContextImpl = new IOExecutionContextImpl(actorSystem)
 
-    val kafkaConfiguration = KafkaConfiguration.parse(ConfigFactory.load()).get
+    val kafkaConfiguration = MonadicUtils.unsafe(KafkaConfiguration.parse(ConfigFactory.load()))
     val kafkaAdministrator: KafkaAdministrator = new KafkaAdministratorImpl(kafkaConfiguration, ioExecutionContext)
 
     val result =
