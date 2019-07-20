@@ -1,45 +1,36 @@
 package com.ruchij.email
 
-import java.nio.file.Paths
-
-import akka.actor.{ActorSystem, Cancellable}
+import akka.Done
+import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
 import com.ruchij.email.config.EmailConfiguration
-import com.ruchij.email.services.email.client.SendGridEmailClient
-import com.ruchij.email.services.email.models.Email
-import com.ruchij.shared.kafka.stubs.StubKafkaBroker
-import com.ruchij.shared.kafka.stubs.StubKafkaBroker.verificationEmailGenerator
+import com.ruchij.email.services.email.client.{EmailClient, SendGridEmailClient}
+import com.ruchij.email.services.email.{EmailParser, EmailSerializer}
 import com.ruchij.shared.config.KafkaConfiguration
 import com.ruchij.shared.ec.{IOExecutionContext, IOExecutionContextImpl}
 import com.ruchij.shared.kafka.KafkaTopic
 import com.ruchij.shared.kafka.consumer.{KafkaConsumer, KafkaConsumerImpl}
 import com.ruchij.shared.monads.MonadicUtils
-import com.ruchij.shared.utils.{IOUtils, SystemUtilities}
+import com.ruchij.shared.utils.SystemUtilities
 import com.sendgrid.SendGrid
 import com.typesafe.config.ConfigFactory
+import com.typesafe.scalalogging.Logger
+import play.api.libs.json.Json
 import scalaz.std.scalaFuture.futureInstance
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, ExecutionContextExecutor, Future, Promise}
+import scala.concurrent.{Await, ExecutionContext, ExecutionContextExecutor, Future}
 import scala.language.postfixOps
+import scala.util.Success
 
 object App {
+  private val logger = Logger[App.type]
+
   def main(args: Array[String]): Unit =
-    Await.ready(Future.successful(run()), Duration.Inf)
+    Await.ready(run(), Duration.Inf)
 
-  def render(): Future[Integer] = {
-    import scala.concurrent.ExecutionContext.Implicits.global
-
-    implicit val systemUtilities: SystemUtilities = SystemUtilities
-
-    IOUtils.writeToFile(
-      Paths.get("email-template.html"),
-      Email.create(StubKafkaBroker.verificationEmailGenerator.generate()).content.body.getBytes
-    )
-  }
-
-  def run(): Cancellable = {
+  def run(): Future[Done] = {
     implicit val actorSystem: ActorSystem = ActorSystem("email-service")
     implicit val actorMaterializer: ActorMaterializer = ActorMaterializer()
     implicit val executionContextExecutor: ExecutionContextExecutor = actorSystem.dispatcher
@@ -49,46 +40,60 @@ object App {
     val emailConfiguration =
       MonadicUtils.unsafe { EmailConfiguration.parse(ConfigFactory.load()) }
 
+    println {
+      Json.prettyPrint(Json.toJson(emailConfiguration))
+    }
+
     val ioExecutionContext: IOExecutionContext = new IOExecutionContextImpl(actorSystem)
-    val sendGrid = new SendGrid(emailConfiguration.sendGridApiKey)
+    val sendGrid = new SendGrid(emailConfiguration.sendGridApiKey.value)
 
     val dependencies = Dependencies(sendGrid, ioExecutionContext)
-    val emailClient = SendGridEmailClient
 
-//    val kafkaConfiguration =
-//      MonadicUtils.unsafe { KafkaConfiguration.parse(ConfigFactory.load()) }
-//
-//    val kafkaConsumer: KafkaConsumer = new KafkaConsumerImpl(kafkaConfiguration)
-    val kafkaConsumer = new StubKafkaBroker()
+    val kafkaConfiguration =
+      MonadicUtils.unsafe { KafkaConfiguration.parse(ConfigFactory.load()) }
 
+    println {
+      Json.prettyPrint(Json.toJson(kafkaConfiguration))
+    }
+
+    val kafkaConsumer: KafkaConsumer = new KafkaConsumerImpl(kafkaConfiguration)
+
+   execute(KafkaTopic.EmailVerification)(dependencies, kafkaConsumer, SendGridEmailClient)
+  }
+
+  def execute[Message, EmailBody, ClientMessage](
+    kafkaTopic: KafkaTopic[Message]
+  )(dependencies: Dependencies, kafkaConsumer: KafkaConsumer, emailClient: EmailClient[ClientMessage, _])(
+    implicit emailParser: EmailParser[Message, EmailBody],
+    emailSerializer: EmailSerializer[EmailBody, ClientMessage],
+    materializer: ActorMaterializer,
+    executionContext: ExecutionContext
+  ): Future[Done] =
     kafkaConsumer
-      .subscribe(KafkaTopic.EmailVerification)
+      .subscribe(kafkaTopic)
       .mapAsync(parallelism = 1) {
-        case (verificationEmail, committableOffset) =>
-          emailClient.send(Email.create(verificationEmail))
-              .flatMapK {
-                response =>
-                  println(response.getStatusCode)
-                  committableOffset.commitScaladsl()
-              }
-              .local(emailClient.local)
-              .run(dependencies)
+        case (message, committableOffset) =>
+          Future.fromTry { emailParser.email(message) }
+            .andThen {
+              case Success(email) =>
+                logger.info(s"Sending email to ${email.to}")
+            }
+            .map(_ -> committableOffset)
+      }
+      .mapAsync(parallelism = 1) {
+        case (email, committableOffset) =>
+          emailClient
+            .send(email)
+            .flatMapK { response =>
+              committableOffset.commitScaladsl()
+            }
+            .run(emailClient.local(dependencies))
 
       }
       .runWith(Sink.ignore)
-
-    StubKafkaBroker.publishGeneratedMessages(KafkaTopic.EmailVerification, kafkaConsumer, interval = 30 seconds)
-  }
-
-  def delay(
-    finiteDuration: FiniteDuration
-  )(implicit actorSystem: ActorSystem, executionContext: ExecutionContext): Future[FiniteDuration] = {
-    val promise = Promise[FiniteDuration]
-
-    actorSystem.scheduler.scheduleOnce(finiteDuration) {
-      promise.success(finiteDuration)
-    }
-
-    promise.future
-  }
+      .recoverWith {
+        case throwable =>
+          logger.error(throwable.getMessage, throwable)
+          execute(kafkaTopic)(dependencies, kafkaConsumer, emailClient)
+      }
 }

@@ -7,11 +7,13 @@ import scalaz.ReaderT
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait EmailClient[Input, Body, Output] {
+trait EmailClient[ClientMessage, Output] {
+  type Input
+
   def local(dependencies: Dependencies): Input
 
   def send[A](email: Email[A])(
-    implicit emailSerializer: EmailSerializer[A, Body],
+    implicit emailSerializer: EmailSerializer[A, ClientMessage],
     executionContext: ExecutionContext
   ): ReaderT[Future, Input, Output]
 }

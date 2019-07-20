@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit
 
 import com.ruchij.macros.config.ConfigParser
 import com.ruchij.macros.config.ConfigParser.parseImpl
+import com.ruchij.shared.config.models.Secret
 import com.typesafe.config.Config
 import org.joda.time.DateTime
 
@@ -29,6 +30,9 @@ object ConfigurationParser {
     (config: Config, path: String) => Try(config.getString(path)).flatMap(string => Try(DateTime.parse(string)))
 
   implicit val intParser: ConfigParser[Int] = (config: Config, path: String) => Try(config.getInt(path))
+
+  implicit def secretParser[A](implicit configParser: ConfigParser[A]): ConfigParser[Secret[A]] =
+    (config: Config, path: String) => configParser.parse(config, path).map(Secret.apply)
 
   implicit def optionParser[A](implicit configParser: ConfigParser[A]): ConfigParser[Option[A]] =
     (config: Config, path: String) =>

@@ -17,7 +17,7 @@ object KafkaUtils {
       CommonClientConfigs.SECURITY_PROTOCOL_CONFIG -> SecurityProtocol.SASL_SSL.name,
       SaslConfigs.SASL_MECHANISM -> PlainSaslServer.PLAIN_MECHANISM,
       SaslConfigs.SASL_JAAS_CONFIG ->
-        s"""${classOf[PlainLoginModule].getName} required username="${kafkaConfiguration.kafkaUsername}" password="${kafkaConfiguration.kafkaPassword}";""",
+        s"""${classOf[PlainLoginModule].getName} required username="${kafkaConfiguration.kafkaUsername.value}" password="${kafkaConfiguration.kafkaPassword.value}";""",
       SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG -> SslConfigs.DEFAULT_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM,
       CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG -> kafkaConfiguration.bootstrapServers
     )
@@ -26,7 +26,7 @@ object KafkaUtils {
     Map(
       AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG -> kafkaConfiguration.schemaRegistryUrl,
       SchemaRegistryClientConfig.BASIC_AUTH_CREDENTIALS_SOURCE -> "USER_INFO",
-      SchemaRegistryClientConfig.USER_INFO_CONFIG -> s"${kafkaConfiguration.schemaRegistryUsername}:${kafkaConfiguration.schemaRegistryPassword}"
+      SchemaRegistryClientConfig.USER_INFO_CONFIG -> s"${kafkaConfiguration.schemaRegistryUsername.value}:${kafkaConfiguration.schemaRegistryPassword.value}"
     )
 
   def toProperties(map: Map[String, String]): Properties =

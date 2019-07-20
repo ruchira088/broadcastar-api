@@ -8,6 +8,7 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
 import com.github.javafaker.Faker
 import com.ruchij.shared.config.KafkaConfiguration
+import com.ruchij.shared.config.models.Secret
 import com.ruchij.shared.ec.IOExecutionContextImpl
 import com.ruchij.shared.kafka.{KafkaMessage, KafkaTopic}
 import com.ruchij.shared.kafka.KafkaTopic.UserCreated
@@ -35,28 +36,28 @@ object Playground {
   private val logger: Logger = Logger[Playground.type]
 
   def main(args: Array[String]): Unit = {
-    val kafkaConfiguration = KafkaConfiguration.parse(ConfigFactory.load()).get
-
-    implicit val actorSystem: ActorSystem = ActorSystem("playground")
-    implicit val materializer: ActorMaterializer = ActorMaterializer()
-    implicit val executionContextExecutor: ExecutionContextExecutor = actorSystem.dispatcher
-
-    implicit val systemUtilities: SystemUtilities = SystemUtilities
-
-    val wsClient = AhcWSClient()
-
-    println {
-      Await.result(new KafkaAdministratorImpl(kafkaConfiguration, new IOExecutionContextImpl(actorSystem)).listTopics(), Duration.Inf)
-    }
-
-    wsClient.close()
-    materializer.shutdown()
-
-    actorSystem.terminate()
-      .onComplete {
-        case Success(_) => sys.exit()
-        case _ => sys.exit(1)
-      }
+//    val kafkaConfiguration = KafkaConfiguration.parse(ConfigFactory.load()).get
+//
+//    implicit val actorSystem: ActorSystem = ActorSystem("playground")
+//    implicit val materializer: ActorMaterializer = ActorMaterializer()
+//    implicit val executionContextExecutor: ExecutionContextExecutor = actorSystem.dispatcher
+//
+//    implicit val systemUtilities: SystemUtilities = SystemUtilities
+//
+//    val wsClient = AhcWSClient()
+//
+//    println {
+//      Await.result(new KafkaAdministratorImpl(kafkaConfiguration, new IOExecutionContextImpl(actorSystem)).listTopics(), Duration.Inf)
+//    }
+//
+//    wsClient.close()
+//    materializer.shutdown()
+//
+//    actorSystem.terminate()
+//      .onComplete {
+//        case Success(_) => sys.exit()
+//        case _ => sys.exit(1)
+//      }
 //
 //    val faker = Faker.instance()
 //

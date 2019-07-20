@@ -10,7 +10,9 @@ import scalaz.ReaderT
 
 import scala.concurrent.{ExecutionContext, Future}
 
-object SendGridEmailClient extends EmailClient[(SendGrid, IOExecutionContext), Mail, Response] {
+object SendGridEmailClient extends EmailClient[Mail, Response] {
+  override type Input = (SendGrid, IOExecutionContext)
+
   override def local(dependencies: Dependencies): (SendGrid, IOExecutionContext) =
     (dependencies.sendGrid, dependencies.ioExecutionContext)
 

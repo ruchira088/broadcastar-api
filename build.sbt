@@ -42,11 +42,7 @@ lazy val userService =
         Map(
           "GIT_COMMIT" -> "unspecified",
           "GIT_BRANCH" -> "unspecified",
-          "DOCKER_BUILD_TIMESTAMP" -> "1970-01-01T00:00:00Z",
-          "KAFKA_USERNAME" -> "n/a",
-          "KAFKA_PASSWORD" -> "n/a",
-          "SCHEMA_REGISTRY_USERNAME" -> "n/a",
-          "SCHEMA_REGISTRY_PASSWORD" -> "n/a"
+          "DOCKER_BUILD_TIMESTAMP" -> "1970-01-01T00:00:00Z"
         )
     )
     .dependsOn(macros, shared % "compile->compile;test->test")
@@ -104,7 +100,13 @@ lazy val emailService =
     .settings(
       name := "email-service",
       version := "0.0.1",
-      libraryDependencies ++= Seq(akkaActor, akkaStream, typesafeConfig, sendgrid, scalaz)
+      libraryDependencies ++= Seq(akkaActor, akkaStream, typesafeConfig, sendgrid, scalaz, logback, scalaLogging),
+      assemblyJarName in assembly := s"${name.value}-${version.value}.jar",
+      assemblyMergeStrategy in assembly := {
+        case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
+        case classFilePath if classFilePath.endsWith("class") => MergeStrategy.first
+        case _ => MergeStrategy.concat
+      }
     )
     .dependsOn(shared)
 

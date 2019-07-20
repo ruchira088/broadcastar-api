@@ -15,8 +15,8 @@ class SchemaRegistryImpl @Inject()(wsClient: WSClient, kafkaConfiguration: Kafka
     wsClient
       .url(s"${kafkaConfiguration.schemaRegistryUrl}/subjects/$topicName")
       .withAuth(
-        kafkaConfiguration.schemaRegistryUsername,
-        kafkaConfiguration.schemaRegistryPassword,
+        kafkaConfiguration.schemaRegistryUsername.value,
+        kafkaConfiguration.schemaRegistryPassword.value,
         WSAuthScheme.BASIC
       )
       .execute(HttpVerbs.DELETE)
@@ -30,8 +30,8 @@ class SchemaRegistryImpl @Inject()(wsClient: WSClient, kafkaConfiguration: Kafka
     wsClient
       .url(s"${kafkaConfiguration.schemaRegistryUrl}/subjects")
       .withAuth(
-        kafkaConfiguration.schemaRegistryUsername,
-        kafkaConfiguration.schemaRegistryPassword,
+        kafkaConfiguration.schemaRegistryUsername.value,
+        kafkaConfiguration.schemaRegistryPassword.value,
         WSAuthScheme.BASIC
       )
       .execute(HttpVerbs.GET)
