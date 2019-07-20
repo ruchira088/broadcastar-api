@@ -23,7 +23,7 @@ object Dependencies {
 
   lazy val commonsValidator = "commons-validator" % "commons-validator" % "1.6"
 
-  lazy val s3 = "software.amazon.awssdk" % "s3" % "2.7.5"
+  lazy val s3 = "software.amazon.awssdk" % "s3" % "2.7.8"
 
   lazy val typesafeConfig = "com.typesafe" % "config" % "1.3.4"
 
@@ -33,7 +33,7 @@ object Dependencies {
 
   lazy val kafkaClients = "org.apache.kafka" % "kafka-clients" % "2.3.0"
 
-  lazy val kafkaAvroSerializer = "io.confluent" % "kafka-avro-serializer" % "5.2.2"
+  lazy val kafkaAvroSerializer = "io.confluent" % "kafka-avro-serializer" % "5.3.0"
 
   lazy val avro4s = "com.sksamuel.avro4s" %% "avro4s-core" % "2.0.4"
 
@@ -49,5 +49,5 @@ object Dependencies {
 
   lazy val pegdown = "org.pegdown" % "pegdown" % "1.6.0"
 
-  lazy val faker = "com.github.javafaker" % "javafaker" % "0.18"
+  lazy val faker = "com.github.javafaker" % "javafaker" % "1.0.0"
 }
