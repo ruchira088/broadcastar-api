@@ -91,7 +91,8 @@ lazy val shared =
         kafkaClients,
         kafkaAvroSerializer,
         akkaStreamKafka,
-        avro4s
+        avro4s,
+        faker
       ),
       libraryDependencies ++= Seq(scalaTestPlusPlay).map(_ % Test)
     )
@@ -99,10 +100,11 @@ lazy val shared =
 
 lazy val emailService =
   (project in file("./email-service"))
+    .enablePlugins(SbtTwirl)
     .settings(
       name := "email-service",
       version := "0.0.1",
-      libraryDependencies ++= Seq(akkaActor, akkaStream, typesafeConfig)
+      libraryDependencies ++= Seq(akkaActor, akkaStream, typesafeConfig, sendgrid, scalaz)
     )
     .dependsOn(shared)
 
@@ -115,9 +117,9 @@ lazy val macros =
   (project in file("./macros"))
     .settings(name := "macros", version := "0.0.1", libraryDependencies ++= Seq(scalaReflect, typesafeConfig, jodaTime))
 
-addCommandAlias("cleanAll", "; messageService/clean; userService/clean; shared/clean; macros/clean")
-addCommandAlias("compileAll", "; macros/compile; shared/compile; userService/compile; messageService/compile")
-addCommandAlias("testWithCoverage", "; coverage; userService/test; messageService/test; coverageReport")
+addCommandAlias("cleanAll", "; emailService/clean; messageService/clean; userService/clean; shared/clean; macros/clean")
+addCommandAlias("compileAll", "; macros/compile; shared/compile; userService/compile; messageService/compile; emailService/compile")
+addCommandAlias("testWithCoverage", "; coverage; userService/test; messageService/test; emailService/test; coverageReport")
 
 addCommandAlias(
   "userServiceWithPostgresql",

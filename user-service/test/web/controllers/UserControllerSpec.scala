@@ -5,9 +5,8 @@ import java.util.UUID
 import com.ruchij.shared.exceptions.ValidationException
 import com.ruchij.shared.models.User
 import com.ruchij.shared.test.utils.Matchers.{beJson, equalJsonOf}
-import com.ruchij.shared.test.utils.RandomGenerator
 import com.ruchij.shared.test.utils.TestUtils._
-import com.ruchij.shared.utils.SystemUtilities
+import com.ruchij.shared.utils.{RandomGenerator, SystemUtilities}
 import com.ruchij.shared.web.responses.models.ExceptionResponse
 import org.apache.commons.lang3.StringUtils
 import org.joda.time.DateTime

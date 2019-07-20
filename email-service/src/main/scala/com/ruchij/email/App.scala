@@ -3,13 +3,14 @@ package com.ruchij.email
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
+import com.ruchij.shared.kafka.stubs.StubKafkaConsumer
+import com.ruchij.shared.kafka.stubs.StubKafkaConsumer.verificationEmailGenerator
 import com.ruchij.shared.config.KafkaConfiguration
 import com.ruchij.shared.kafka.KafkaTopic
 import com.ruchij.shared.kafka.consumer.{KafkaConsumer, KafkaConsumerImpl}
 import com.ruchij.shared.monads.MonadicUtils
 import com.ruchij.shared.utils.SystemUtilities
 import com.typesafe.config.ConfigFactory
-import courier.Mailer
 
 import scala.concurrent.ExecutionContextExecutor
 
@@ -24,14 +25,17 @@ object App {
 
     implicit val systemUtilities: SystemUtilities = SystemUtilities
 
-    val kafkaConsumer: KafkaConsumer = new KafkaConsumerImpl(kafkaConfiguration)
+//    val kafkaConsumer: KafkaConsumer = new KafkaConsumerImpl(kafkaConfiguration)
+    val kafkaConsumer = new StubKafkaConsumer()
 
     kafkaConsumer.subscribe(KafkaTopic.EmailVerification)
-      .mapAsync(1) {
+      .mapAsync(parallelism = 1) {
         case (verificationEmail, committableOffset) =>
           println(verificationEmail)
           committableOffset.commitScaladsl()
       }
       .runWith(Sink.ignore)
+
+    StubKafkaConsumer.run(KafkaTopic.EmailVerification, kafkaConsumer.actorRef)
   }
 }

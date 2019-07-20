@@ -1,8 +1,8 @@
 package utils
 
 import com.github.javafaker.Faker
-import com.ruchij.shared.test.utils.RandomGenerator
-import com.ruchij.shared.test.utils.RandomGenerator._
+import com.ruchij.shared.utils.RandomGenerator._
+import com.ruchij.shared.utils.RandomGenerator
 import web.requests.models.CreateUserRequest
 
 object Random {

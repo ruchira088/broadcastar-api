@@ -38,6 +38,8 @@ object Dependencies {
   lazy val avro4s = "com.sksamuel.avro4s" %% "avro4s-core" % "2.0.4"
 
   lazy val akkaStreamKafka = "com.typesafe.akka" %% "akka-stream-kafka" % "1.0.4"
+  
+  lazy val sendgrid = "com.sendgrid" % "sendgrid-java" % "4.4.1"
 
   lazy val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.2.3"
 

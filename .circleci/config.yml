@@ -133,6 +133,12 @@ commands:
           command: ansible-playbook << parameters.project >>/ci/ansible/aws-resources.yml
 
 jobs:
+  shared_create_aws_resources:
+    executor: ubuntu
+    steps:
+      - create_aws_resources:
+          project: shared
+
   user_create_aws_resources:
     executor: ubuntu
     steps:
@@ -183,14 +189,20 @@ jobs:
       - compile_and_test:
           sbt_project: messageService
 
-  shared_create_aws_resources:
-    executor: ubuntu
+  email_compile_and_test:
+    executor: open-jdk
     steps:
-      - create_aws_resources:
-          project: shared
+      - compile_and_test:
+          sbt_project: emailService
 
 workflows:
   version: 2
+
+  shared:
+    jobs:
+      - shared_create_aws_resources:
+          context: aws-credentials
+
   user_service:
     jobs:
       - user_create_aws_resources:
@@ -213,9 +225,8 @@ workflows:
     jobs:
       - message_compile_and_test
 
-  shared:
+  email_service:
     jobs:
-      - shared_create_aws_resources:
-          context: aws-credentials
+      - email_compile_and_test
 
 
