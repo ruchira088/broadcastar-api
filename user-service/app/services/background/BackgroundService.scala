@@ -1,9 +1,9 @@
 package services.background
 
-import akka.Done
+import akka.actor.Cancellable
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 trait BackgroundService {
-  def start()(implicit executionContext: ExecutionContext): Future[Done]
+  def start()(implicit executionContext: ExecutionContext): Cancellable
 }

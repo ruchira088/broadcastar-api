@@ -1,14 +1,14 @@
 package web.controllers
 
-import com.ruchij.shared.test.bindings.GuiceBinding._
 import com.ruchij.shared.test.utils.Matchers._
+import com.ruchij.shared.test.bindings.GuiceUtils.application
 import com.ruchij.shared.utils.SystemUtilities
 import info.BuildInfo
 import org.joda.time.DateTime
 import org.scalatestplus.play._
+import play.api.inject.bind
 import play.api.test.Helpers._
 import play.api.test._
-import utils.GuiceUtils.application
 
 import scala.util.Properties
 
@@ -23,7 +23,7 @@ class HomeControllerSpec extends PlaySpec {
         override def currentTime(): DateTime = timestamp
       }
 
-      val app = application(classOf[SystemUtilities] -> systemUtilities)
+      val app = application(bind[SystemUtilities].toInstance(systemUtilities))
 
       val request = FakeRequest(GET, "/health")
       val home = route(app, request).value

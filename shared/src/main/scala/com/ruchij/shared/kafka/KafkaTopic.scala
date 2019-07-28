@@ -10,8 +10,8 @@ import com.ruchij.shared.utils.StringUtils.camelCaseToKebabCase
 import com.sksamuel.avro4s.RecordFormat
 
 sealed abstract class KafkaTopic[A](implicit val recordFormat: RecordFormat[A]) extends Enum { self =>
-  def name(kafkaConfiguration: KafkaConfiguration): String =
-    camelCaseToKebabCase(kafkaConfiguration.topicPrefix + ClassUtils.simpleClassName(self))
+  def name(topicPrefix: String): String =
+    camelCaseToKebabCase(topicPrefix + ClassUtils.simpleClassName(self))
 }
 
 object KafkaTopic {

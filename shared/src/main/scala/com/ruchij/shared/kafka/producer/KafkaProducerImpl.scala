@@ -21,7 +21,7 @@ class KafkaProducerImpl @Inject()(kafkaConfiguration: KafkaConfiguration)(implic
     val promise = Promise[RecordMetadata]
 
       kafkaProducer.send(
-        new ProducerRecord[String, AnyRef](message.kafkaTopic.name(kafkaConfiguration), message.kafkaTopic.recordFormat.to(message.value)),
+        new ProducerRecord[String, AnyRef](message.kafkaTopic.name(kafkaConfiguration.topicPrefix), message.kafkaTopic.recordFormat.to(message.value)),
         new Callback {
           override def onCompletion(metadata: RecordMetadata, exception: Exception): Unit =
             Option(exception).fold(promise.success(metadata))(promise.failure)

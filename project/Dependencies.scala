@@ -23,7 +23,7 @@ object Dependencies {
 
   lazy val commonsValidator = "commons-validator" % "commons-validator" % "1.6"
 
-  lazy val s3 = "software.amazon.awssdk" % "s3" % "2.7.8"
+  lazy val s3 = "software.amazon.awssdk" % "s3" % "2.7.13"
 
   lazy val typesafeConfig = "com.typesafe" % "config" % "1.3.4"
 
@@ -37,7 +37,7 @@ object Dependencies {
 
   lazy val avro4s = "com.sksamuel.avro4s" %% "avro4s-core" % "2.0.4"
 
-  lazy val akkaStreamKafka = "com.typesafe.akka" %% "akka-stream-kafka" % "1.0.4"
+  lazy val akkaStreamKafka = "com.typesafe.akka" %% "akka-stream-kafka" % "1.0.5"
   
   lazy val sendgrid = "com.sendgrid" % "sendgrid-java" % "4.4.1"
 

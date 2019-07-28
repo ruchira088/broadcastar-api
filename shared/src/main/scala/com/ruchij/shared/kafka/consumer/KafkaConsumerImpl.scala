@@ -25,7 +25,7 @@ class KafkaConsumerImpl @Inject()(kafkaConfiguration: KafkaConfiguration)(implic
     kafkaTopic: KafkaTopic[A]
   )(implicit executionContext: ExecutionContext): Source[(A, CommittableOffset), _] =
     Consumer
-      .committableSource(KafkaConsumerImpl.settings(kafkaConfiguration), Subscriptions.topics(kafkaTopic.name(kafkaConfiguration)))
+      .committableSource(KafkaConsumerImpl.settings(kafkaConfiguration), Subscriptions.topics(kafkaTopic.name(kafkaConfiguration.topicPrefix)))
       .map { committableMessage => (committableMessage.record.value(), committableMessage.committableOffset) }
       .mapAsync(1) {
         case (genericRecord: GenericRecord, committableOffset) =>

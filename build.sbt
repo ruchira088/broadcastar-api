@@ -42,11 +42,7 @@ lazy val userService =
         Map(
           "GIT_COMMIT" -> "unspecified",
           "GIT_BRANCH" -> "unspecified",
-          "DOCKER_BUILD_TIMESTAMP" -> "1970-01-01T00:00:00Z",
-          "KAFKA_USERNAME" -> "n/a",
-          "KAFKA_PASSWORD" -> "n/a",
-          "SCHEMA_REGISTRY_USERNAME" -> "n/a",
-          "SCHEMA_REGISTRY_PASSWORD" -> "n/a"
+          "DOCKER_BUILD_TIMESTAMP" -> "1970-01-01T00:00:00Z"
         )
     )
     .dependsOn(macros, shared % "compile->compile;test->test")

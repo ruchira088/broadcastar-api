@@ -13,7 +13,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class AuthenticatedAction @Inject()(
   parser: BodyParsers.Default,
-  sessionTokenExtractor: SessionTokenExtractor[String],
+  sessionTokenExtractor: SessionTokenExtractor,
   authenticationService: AuthenticationService
 )(implicit executionContext: ExecutionContext)
     extends ActionBuilderImpl(parser) {

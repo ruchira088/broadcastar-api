@@ -5,11 +5,11 @@ import play.api.mvc.RequestHeader
 
 import scala.util.matching.Regex
 
-trait SessionTokenExtractor[+B] {
-  def token(requestHeader: RequestHeader): Option[B]
+trait SessionTokenExtractor {
+  def token(requestHeader: RequestHeader): Option[String]
 }
 
-object SessionTokenExtractor extends SessionTokenExtractor[String] {
+object SessionTokenExtractor extends SessionTokenExtractor {
   val authorizationCredentials: Regex = "[Bb]earer (\\S+)".r
 
   override def token(requestHeader: RequestHeader): Option[String] =

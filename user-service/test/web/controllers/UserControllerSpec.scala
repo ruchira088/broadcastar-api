@@ -4,6 +4,7 @@ import java.util.UUID
 
 import com.ruchij.shared.exceptions.ValidationException
 import com.ruchij.shared.models.User
+import com.ruchij.shared.test.bindings.GuiceUtils.application
 import com.ruchij.shared.test.utils.Matchers.{beJson, equalJsonOf}
 import com.ruchij.shared.test.utils.TestUtils._
 import com.ruchij.shared.utils.{RandomGenerator, SystemUtilities}
@@ -11,8 +12,8 @@ import com.ruchij.shared.web.responses.models.ExceptionResponse
 import org.apache.commons.lang3.StringUtils
 import org.joda.time.DateTime
 import org.scalatestplus.play.PlaySpec
+import play.api.inject.bind
 import play.api.test.Helpers._
-import utils.GuiceUtils.application
 import utils.Random.createUserRequestGenerator
 import web.requests.models.CreateUserRequest
 
@@ -32,7 +33,7 @@ class UserControllerSpec extends PlaySpec {
       val createUserRequest = RandomGenerator.generate[CreateUserRequest]
       val request = postRequest("/user", createUserRequest)
 
-      val app = application(classOf[SystemUtilities] -> systemUtilities)
+      val app = application(bind[SystemUtilities].toInstance(systemUtilities))
       val response = route(app, request).value
 
       val expectedCreatedUser =

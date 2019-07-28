@@ -12,7 +12,7 @@ import services.background.BackgroundService
 import scala.util.Properties
 
 @Singleton
-class HomeController @Inject()(backgroundService: BackgroundService, controllerComponents: ControllerComponents)(
+class HomeController @Inject()(controllerComponents: ControllerComponents)(
   implicit systemUtilities: SystemUtilities,
   applicationInformation: BuildInformation
 ) extends AbstractController(controllerComponents) {
