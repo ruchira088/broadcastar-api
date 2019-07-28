@@ -4,8 +4,8 @@ import akka.Done
 import akka.actor.Cancellable
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Keep, Sink}
+import com.ruchij.shared.kafka.KafkaMessage
 import com.ruchij.shared.kafka.models.VerificationEmail
-import com.ruchij.shared.kafka.{KafkaMessage, KafkaTopic}
 import com.ruchij.shared.kafka.producer.KafkaProducer
 import dao.user.models.DatabaseUser
 import javax.inject.{Inject, Singleton}
@@ -30,7 +30,7 @@ class BackgroundServiceImpl @Inject()(triggeringService: TriggeringService, user
           kafkaProducer.publish(KafkaMessage(VerificationEmail(emailVerificationToken, DatabaseUser.toUser(databaseUser))))
       }
 
-  override def start()(implicit executionContext: ExecutionContext): Cancellable =
+  override def start()(implicit executionContext: ExecutionContext): (Cancellable, Future[Done]) =
     triggeringService
       .userCreated()
       .mapAsync(parallelism = 1) { databaseUser =>
@@ -39,6 +39,6 @@ class BackgroundServiceImpl @Inject()(triggeringService: TriggeringService, user
         }
           .flatMap(_ => triggeringService.commitUserCreated(databaseUser))
       }
-      .toMat(Sink.ignore)(Keep.left)
+      .toMat(Sink.ignore)(Keep.both)
       .run()
 }

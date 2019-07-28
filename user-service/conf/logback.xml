@@ -5,7 +5,7 @@
 
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <pattern>%coloredLevel %logger{15} - %message%n%xException{10}</pattern>
+      <pattern>%date{ISO8601} %coloredLevel [%t] %logger - %message%n%xException{10}</pattern>
     </encoder>
   </appender>
 
@@ -22,7 +22,7 @@
   <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread" level="OFF" />
   <logger name="com.gargoylesoftware.htmlunit.javascript" level="OFF" />
 
-  <root level="WARN">
+  <root level="INFO">
     <appender-ref ref="ASYNCSTDOUT" />
   </root>
 

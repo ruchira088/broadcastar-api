@@ -88,7 +88,6 @@ object App {
               committableOffset.commitScaladsl()
             }
             .run(emailClient.local(dependencies))
-
       }
       .runWith(Sink.ignore)
       .recoverWith {
