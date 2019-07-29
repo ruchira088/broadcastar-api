@@ -1,6 +1,6 @@
 package com.ruchij.shared.json
 
-import play.api.libs.json.{JsResult, JsResultException}
+import play.api.libs.json.{JsResult, JsResultException, Json, Writes}
 
 import scala.util.{Failure, Success, Try}
 
@@ -10,4 +10,9 @@ object JsonUtils {
       validationErrors => Failure(JsResultException(validationErrors)),
       Success.apply
     )
+
+  def prettyPrintJson[A : Writes](value: A): String =
+    Json.prettyPrint {
+      Json.toJson(value)
+    }
 }

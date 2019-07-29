@@ -2,11 +2,9 @@ version: "3"
 
 services:
   user-service:
-    build:
-      dockerfile: user-service/Dockerfile
-      context: .
+    build: .
     tty: true
-    command: "userServiceWithPostgresql"
+    command: userServiceWithPostgresql
     depends_on:
       - postgresql-database
       - kafka-broker
@@ -17,21 +15,42 @@ services:
     volumes:
       - "~/.sbt:/root/.sbt"
       - "~/.ivy2:/root/.ivy2"
+      - "~/.aws:/root/.aws"
       - ".:/opt/chirper-api"
       - "/opt/chirper-api/project/target"
       - "/opt/chirper-api/user-service/target"
       - "/opt/chirper-api/shared/target"
       - "/opt/chirper-api/macros/target"
       - "/root/.sbt/1.0/plugins"
-      - "~/.aws:/root/.aws"
-    env_file:
-      - secrets.env
     environment:
       POSTGRESQL_URL: "jdbc:postgresql://postgresql-database:5432/user-service"
       POSTGRESQL_USER: "my-user"
       POSTGRESQL_PASSWORD: "password"
       KAFKA_BOOTSTRAP_SERVERS: "kafka-broker:9092"
       SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+      DEV_MODE: "DockerCompose"
+#    env_file:
+#      - secrets.env
+
+  email-service:
+    build: .
+    command: emailService/run
+    depends_on:
+      - schema-registry
+      - kafka-broker
+    volumes:
+      - "~/.sbt:/root/.sbt"
+      - "~/.ivy2:/root/.ivy2"
+      - ".:/opt/chirper-api"
+      - "/opt/chirper-api/project/target"
+      - "/opt/chirper-api/macros/target"
+      - "/opt/chirper-api/shared/target"
+      - "/opt/chirper-api/email-service/target"
+      - "/root/.sbt/1.0/plugins"
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: "kafka-broker:9092"
+      SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+      SENDGRID_API_KEY: "N/A"
 
   postgresql-database:
     image: postgres
@@ -60,8 +79,7 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: "0"
- #     KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://10.129.38.22:9092"
-      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://192.168.1.16:9092"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka-broker:9092"
 
   schema-registry:
     image: confluentinc/cp-schema-registry

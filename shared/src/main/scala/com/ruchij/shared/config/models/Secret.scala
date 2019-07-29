@@ -2,6 +2,8 @@ package com.ruchij.shared.config.models
 
 import play.api.libs.json.{JsString, Writes}
 
+import scala.annotation.tailrec
+
 case class Secret[+A](value: A)
 
 object Secret {
@@ -9,6 +11,7 @@ object Secret {
 
   def mask(input: String): String = mask(input.toList, List.empty)
 
+  @tailrec
   private def mask(input: List[Char], accumulator: List[Char]): String =
     (input, accumulator) match {
       case (Nil, result) => result.mkString

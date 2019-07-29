@@ -10,6 +10,8 @@ trait Enum {
   self =>
 
   def key: String = ClassUtils.simpleClassName(self)
+
+  override def toString: String = key
 }
 
 object Enum {

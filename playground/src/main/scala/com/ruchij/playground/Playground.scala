@@ -7,12 +7,12 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
 import com.github.javafaker.Faker
-import com.ruchij.shared.config.KafkaConfiguration
 import com.ruchij.shared.config.models.Secret
 import com.ruchij.shared.ec.IOExecutionContextImpl
 import com.ruchij.shared.kafka.{KafkaMessage, KafkaTopic}
 import com.ruchij.shared.kafka.KafkaTopic.UserCreated
 import com.ruchij.shared.kafka.admin.KafkaAdministratorImpl
+import com.ruchij.shared.kafka.config.KafkaClientConfiguration
 import com.ruchij.shared.kafka.consumer.{KafkaConsumer, KafkaConsumerImpl}
 import com.ruchij.shared.kafka.producer.{KafkaProducer, KafkaProducerImpl}
 import com.ruchij.shared.kafka.schemaregistry.SchemaRegistryImpl
@@ -91,7 +91,7 @@ object Playground {
 //      startConsumer(UserCreated, kafkaConfiguration, "consumer-0")
   }
 
-  def startConsumer(kafkaTopic: KafkaTopic[_], kafkaConfiguration: KafkaConfiguration, id: String)(
+  def startConsumer(kafkaTopic: KafkaTopic[_], kafkaConfiguration: KafkaClientConfiguration, id: String)(
     implicit actorSystem: ActorSystem,
     actorMaterializer: ActorMaterializer,
     systemUtilities: SystemUtilities,

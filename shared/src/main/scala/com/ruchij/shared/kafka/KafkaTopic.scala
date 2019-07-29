@@ -3,7 +3,7 @@ package com.ruchij.shared.kafka
 import com.ruchij.enum.Enum
 import com.ruchij.shared.avro4s.AvroFormat.DateTimeFormat
 import com.ruchij.macros.utils.ClassUtils
-import com.ruchij.shared.config.KafkaConfiguration
+import com.ruchij.shared.kafka.config.KafkaClientConfiguration
 import com.ruchij.shared.kafka.models.VerificationEmail
 import com.ruchij.shared.models.User
 import com.ruchij.shared.utils.StringUtils.camelCaseToKebabCase

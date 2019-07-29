@@ -1,8 +1,10 @@
 package modules
 
-import com.ruchij.shared.config.KafkaConfiguration
+import com.ruchij.shared.config.DevelopmentConfiguration
+import com.ruchij.shared.config.models.DevelopmentMode
 import com.ruchij.shared.exceptions.aggregation.AggregatedConfigurationException
 import com.ruchij.shared.info.BuildInformation
+import com.ruchij.shared.kafka.config.{KafkaClientConfiguration, KafkaTopicConfiguration}
 import com.ruchij.shared.kafka.inmemory.InMemoryKafkaBroker
 import com.ruchij.shared.kafka.producer.{KafkaProducer, KafkaProducerImpl}
 import com.ruchij.shared.monads.MonadicUtils.{sequence, sequenceFailFast, tryMonadError, unsafe}
@@ -34,7 +36,9 @@ import scala.util.{Failure, Success, Try}
 object UserServiceModule {
   type Bindings = List[Binding[_]]
 
-  def unsafeBindings(config: Config)(bindings: ReaderT[Try, Config, Either[List[Throwable], Bindings]]*): Bindings =
+  type UnsafeBindings = ReaderT[Try, Config, Either[List[Throwable], Bindings]]
+
+  def unsafeBindingsRun(config: Config)(bindings: UnsafeBindings*): Bindings =
     unsafe {
       sequenceFailFast(
         bindings.map {
@@ -46,7 +50,10 @@ object UserServiceModule {
         .map(_.flatten)
     }
 
-  val coreConfigurationBindings: ReaderT[Try, Config, Either[List[Throwable], Bindings]] =
+  val developmentConfiguration: ReaderT[Try, Config, DevelopmentConfiguration] =
+    ReaderT { DevelopmentConfiguration.parse }
+
+  val coreConfigurationBindings: UnsafeBindings =
     ReaderT {
       config =>
         sequence(
@@ -81,7 +88,7 @@ object UserServiceModule {
       bind[OnStartup].toSelf.eagerly()
     )
 
-  val localBindings: ReaderT[Try, Config, Either[List[Throwable], Bindings]] =
+  val localBindings: UnsafeBindings =
     ReaderT {
       config =>
         sequence(
@@ -91,12 +98,25 @@ object UserServiceModule {
         )
     }
 
-  val onlineBindings: ReaderT[Try, Config, Either[List[Throwable], Bindings]] =
+  val dockerComposeBindings: UnsafeBindings =
+    ReaderT {
+      config =>
+        sequence(
+          KafkaClientConfiguration.parseLocalConfig(config).map(bind[KafkaClientConfiguration].toInstance),
+          KafkaTopicConfiguration.parse(config).map(bind[KafkaTopicConfiguration].toInstance),
+          LocalFileStoreConfiguration.parse(config).map(bind[LocalFileStoreConfiguration].toInstance),
+          Success { bind[FileStore].to[LocalFileStore] },
+          Success { bind[KafkaProducer].to[KafkaProducerImpl] }
+        )
+    }
+
+  val onlineBindings: UnsafeBindings =
     ReaderT {
       config =>
         sequence(
           S3Configuration.parse(config).map(bind[S3Configuration].toInstance),
-          KafkaConfiguration.parse(config).map(bind[KafkaConfiguration].toInstance),
+          KafkaClientConfiguration.parseConfluentConfig(config).map(bind[KafkaClientConfiguration].toInstance),
+          KafkaTopicConfiguration.parse(config).map(bind[KafkaTopicConfiguration].toInstance),
           Success { bind[FileStore].to[S3FileStore] },
           Success { bind[KafkaProducer].to[KafkaProducerImpl] },
           Success { bind[S3AsyncClient].toInstance(S3AsyncClient.create()) }
@@ -109,6 +129,6 @@ object UserServiceModule {
   val other: Bindings =
     List(
       bind[SessionTokenExtractor].toInstance(SessionTokenExtractor),
-      bind[SystemUtilities].toInstance(SystemUtilities)
+      bind[SystemUtilities].toInstance(SystemUtilities),
     )
 }

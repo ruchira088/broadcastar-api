@@ -18,4 +18,17 @@ object EmailSerializer {
         new EmailAddress(email.to),
         new Content(MimeTypes.HTML, email.content.body)
     )
+
+  implicit val stubEmailSerializer: EmailSerializer[HtmlFormat.Appendable, String] =
+    (email: Email[HtmlFormat.Appendable]) =>
+      s"""
+        |---------------------------
+        |From: ${email.from}
+        |To: ${email.to}
+        |Subject: ${email.subject}
+        |
+        |Body:
+        |${email.content.body}
+        |---------------------------
+        |""".stripMargin
 }

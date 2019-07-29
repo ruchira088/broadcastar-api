@@ -23,7 +23,7 @@
           --build-arg git_commit={{ git_commit }} \
           --build-arg git_branch={{ git_branch }} \
           --build-arg build_timestamp={{ ansible_date_time.iso8601 }} \
-          -f user-service/Dockerfile-prod .
+          -f user-service/Dockerfile .
 
     - name: Login to ECR
       shell: $(aws ecr get-login --no-include-email --region ap-southeast-2)

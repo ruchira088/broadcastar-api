@@ -3,6 +3,7 @@ package com.ruchij.shared.config
 import java.nio.file.{Path, Paths}
 import java.util.concurrent.TimeUnit
 
+import com.ruchij.enum.{Enum, EnumValues}
 import com.ruchij.macros.config.ConfigParser
 import com.ruchij.macros.config.ConfigParser.parseImpl
 import com.ruchij.shared.config.models.Secret
@@ -11,6 +12,7 @@ import org.joda.time.DateTime
 
 import scala.concurrent.duration.FiniteDuration
 import scala.language.experimental.macros
+import scala.reflect.ClassTag
 import scala.util.{Success, Try}
 
 object ConfigurationParser {
@@ -37,6 +39,11 @@ object ConfigurationParser {
   implicit def optionParser[A](implicit configParser: ConfigParser[A]): ConfigParser[Option[A]] =
     (config: Config, path: String) =>
       if (!config.hasPath(path)) Success(None) else configParser.parse(config, path).map(Option.apply)
+
+  def enumParser[A <: Enum : ClassTag : EnumValues](implicit configParser: ConfigParser[String]): ConfigParser[A] =
+    (config: Config, path: String) =>
+      configParser.parse(config, path)
+        .flatMap { string => Enum.parse[A](string) }
 
   def parse[A](config: Config): Try[A] = macro parseImpl[A]
 }

@@ -5,18 +5,18 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
 import com.ruchij.email.config.EmailConfiguration
-import com.ruchij.email.services.email.client.{EmailClient, SendGridEmailClient}
+import com.ruchij.email.services.email.client.{EmailClient, StubEmailClient}
 import com.ruchij.email.services.email.{EmailParser, EmailSerializer}
-import com.ruchij.shared.config.KafkaConfiguration
 import com.ruchij.shared.ec.{IOExecutionContext, IOExecutionContextImpl}
+import com.ruchij.shared.json.JsonUtils.prettyPrintJson
 import com.ruchij.shared.kafka.KafkaTopic
+import com.ruchij.shared.kafka.config.{KafkaClientConfiguration, KafkaTopicConfiguration}
 import com.ruchij.shared.kafka.consumer.{KafkaConsumer, KafkaConsumerImpl}
 import com.ruchij.shared.monads.MonadicUtils
 import com.ruchij.shared.utils.SystemUtilities
 import com.sendgrid.SendGrid
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.Logger
-import play.api.libs.json.Json
 import scalaz.std.scalaFuture.futureInstance
 
 import scala.concurrent.duration._
@@ -36,29 +36,30 @@ object App {
     implicit val executionContextExecutor: ExecutionContextExecutor = actorSystem.dispatcher
 
     implicit val systemUtilities: SystemUtilities = SystemUtilities
+    val config = ConfigFactory.load()
 
-    val emailConfiguration =
-      MonadicUtils.unsafe { EmailConfiguration.parse(ConfigFactory.load()) }
-
-    println {
-      Json.prettyPrint(Json.toJson(emailConfiguration))
-    }
+    val (emailConfiguration, kafkaClientConfiguration, kafkaTopicConfiguration) =
+      MonadicUtils.unsafe {
+        for {
+          emailConfiguration <- EmailConfiguration.parse(config)
+          kafkaClientConfiguration <- KafkaClientConfiguration.parseLocalConfig(config)
+          kafkaTopicConfiguration <- KafkaTopicConfiguration.parse(config)
+        }
+        yield (emailConfiguration, kafkaClientConfiguration, kafkaTopicConfiguration)
+      }
 
     val ioExecutionContext: IOExecutionContext = new IOExecutionContextImpl(actorSystem)
     val sendGrid = new SendGrid(emailConfiguration.sendGridApiKey.value)
 
     val dependencies = Dependencies(sendGrid, ioExecutionContext)
 
-    val kafkaConfiguration =
-      MonadicUtils.unsafe { KafkaConfiguration.parse(ConfigFactory.load()) }
+    println { prettyPrintJson(emailConfiguration) }
+    println { prettyPrintJson(kafkaClientConfiguration) }
+    println { prettyPrintJson(kafkaTopicConfiguration) }
 
-    println {
-      Json.prettyPrint(Json.toJson(kafkaConfiguration))
-    }
+    val kafkaConsumer: KafkaConsumer = new KafkaConsumerImpl(kafkaClientConfiguration, kafkaTopicConfiguration)
 
-    val kafkaConsumer: KafkaConsumer = new KafkaConsumerImpl(kafkaConfiguration)
-
-   execute(KafkaTopic.EmailVerification)(dependencies, kafkaConsumer, SendGridEmailClient)
+    execute(KafkaTopic.EmailVerification)(dependencies, kafkaConsumer, StubEmailClient)
   }
 
   def execute[Message, EmailBody, ClientMessage](
