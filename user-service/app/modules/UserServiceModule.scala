@@ -4,7 +4,8 @@ import com.ruchij.shared.config.DevelopmentConfiguration
 import com.ruchij.shared.config.models.DevelopmentMode
 import com.ruchij.shared.exceptions.aggregation.AggregatedConfigurationException
 import com.ruchij.shared.info.BuildInformation
-import com.ruchij.shared.kafka.config.{KafkaClientConfiguration, KafkaTopicConfiguration}
+import com.ruchij.shared.kafka.config.{FileBasedKafkaClientConfiguration, KafkaClientConfiguration, KafkaTopicConfiguration}
+import com.ruchij.shared.kafka.file.FileBasedKafkaBroker
 import com.ruchij.shared.kafka.inmemory.InMemoryKafkaBroker
 import com.ruchij.shared.kafka.producer.{KafkaProducer, KafkaProducerImpl}
 import com.ruchij.shared.monads.MonadicUtils.{sequence, sequenceFailFast, tryMonadError, unsafe}
@@ -88,13 +89,24 @@ object UserServiceModule {
       bind[OnStartup].toSelf.eagerly()
     )
 
-  val localBindings: UnsafeBindings =
+  val leanBindings: UnsafeBindings =
     ReaderT {
       config =>
         sequence(
           LocalFileStoreConfiguration.parse(config).map(bind[LocalFileStoreConfiguration].toInstance),
           Success { bind[FileStore].to[LocalFileStore] },
           Success { bind[KafkaProducer].to[InMemoryKafkaBroker] }
+        )
+    }
+
+  val localBindings: UnsafeBindings =
+    ReaderT {
+      config =>
+        sequence(
+          LocalFileStoreConfiguration.parse(config).map(bind[LocalFileStoreConfiguration].toInstance),
+          FileBasedKafkaClientConfiguration.parse(config).map(bind[FileBasedKafkaClientConfiguration].toInstance),
+          Success { bind[FileStore].to[LocalFileStore] },
+          Success { bind[KafkaProducer].to[FileBasedKafkaBroker] }
         )
     }
 

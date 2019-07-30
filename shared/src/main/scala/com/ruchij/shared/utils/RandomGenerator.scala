@@ -1,10 +1,12 @@
 package com.ruchij.shared.utils
 
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 import com.github.javafaker.Faker
 import com.ruchij.shared.models.User
 
+import scala.concurrent.duration.FiniteDuration
 import scala.util.Random
 
 trait RandomGenerator[+A] {
@@ -26,6 +28,9 @@ object RandomGenerator {
   def generator[A](value: => A): RandomGenerator[A] = () => value
 
   implicit val booleanGenerator: RandomGenerator[Boolean] = () => Random.nextBoolean()
+
+  def finiteDurationGenerator(maxMillis: Int): RandomGenerator[FiniteDuration] =
+    () => FiniteDuration(Random.nextInt(maxMillis), TimeUnit.MILLISECONDS)
 
   implicit def optionGenerator[A](implicit randomGenerator: RandomGenerator[A]): RandomGenerator[Option[A]] =
     booleanGenerator.flatMap { boolean => if (boolean) randomGenerator.map(Some.apply) else generator(None) }

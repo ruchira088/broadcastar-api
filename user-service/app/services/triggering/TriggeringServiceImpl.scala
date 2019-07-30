@@ -4,6 +4,7 @@ import akka.actor.Cancellable
 import akka.stream.scaladsl.Source
 import com.google.inject.{Inject, Singleton}
 import com.ruchij.shared.utils.SystemUtilities
+import com.typesafe.scalalogging.Logger
 import config.TriggerConfiguration
 import dao.offset.OffsetDao
 import dao.user.DatabaseUserDao
@@ -23,6 +24,8 @@ class TriggeringServiceImpl @Inject()(
 )(implicit systemUtilities: SystemUtilities)
     extends TriggeringService {
 
+  private val logger = Logger[TriggeringServiceImpl]
+
   override def userCreated()(implicit executionContext: ExecutionContext): Source[DatabaseUser, Cancellable] =
     Source
       .tick(triggerConfiguration.initialDelay, triggerConfiguration.pollingInterval, (): Unit)
@@ -39,7 +42,11 @@ class TriggeringServiceImpl @Inject()(
                       .isAfter(lockAcquiredAt.plus(triggerConfiguration.offsetLockTimeout.toMillis)))
                     offsetDao
                       .releaseOffsetLock(offset.offsetType, offset.value)
-                      .flatMap(_ => OptionT.none[Future, Offset])
+                      .flatMap {
+                        offset =>
+                          logger.warn(s"Released offset lock due to time-out Offset(value = ${offset.value}, lockAcquiredAt=${offset.lockAcquiredAt})")
+                          OptionT.none[Future, Offset]
+                      }
                   else
                     OptionT.none[Future, Offset]
                 }
@@ -54,7 +61,13 @@ class TriggeringServiceImpl @Inject()(
           }
           .run
       }
-      .mapConcat[DatabaseUser](_.toList)
+      .mapConcat[DatabaseUser] {
+        case Some(databaseUser) =>
+          logger.info(s"New user created: ${databaseUser.username}")
+          List(databaseUser)
+
+        case None => List.empty
+      }
 
   override def commitUserCreated(databaseUser: DatabaseUser)(implicit executionContext: ExecutionContext): Future[Offset] =
     commit(OffsetType.UserCreated, databaseUser.index)

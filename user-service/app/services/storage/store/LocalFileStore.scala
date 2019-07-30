@@ -13,6 +13,6 @@ class LocalFileStore @Inject()(localFileStoreConfiguration: LocalFileStoreConfig
     IOUtils.readFile(localFileStoreConfiguration.storePath.resolve(key))
 
   override def write(key: String, data: Array[Byte])(implicit executionContext: ExecutionContext): Future[FullPath] =
-    IOUtils.writeToFile(localFileStoreConfiguration.storePath.resolve(key), data)
+    IOUtils.writeToFile(localFileStoreConfiguration.storePath.resolve(key), data, append = false)
       .map(_ => localFileStoreConfiguration.storePath.resolve(key).toAbsolutePath.toString)
 }

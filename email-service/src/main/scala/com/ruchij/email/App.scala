@@ -10,8 +10,9 @@ import com.ruchij.email.services.email.{EmailParser, EmailSerializer}
 import com.ruchij.shared.ec.{IOExecutionContext, IOExecutionContextImpl}
 import com.ruchij.shared.json.JsonUtils.prettyPrintJson
 import com.ruchij.shared.kafka.KafkaTopic
-import com.ruchij.shared.kafka.config.{KafkaClientConfiguration, KafkaTopicConfiguration}
+import com.ruchij.shared.kafka.config.{FileBasedKafkaClientConfiguration, KafkaClientConfiguration, KafkaTopicConfiguration}
 import com.ruchij.shared.kafka.consumer.{KafkaConsumer, KafkaConsumerImpl}
+import com.ruchij.shared.kafka.file.FileBasedKafkaBroker
 import com.ruchij.shared.monads.MonadicUtils
 import com.ruchij.shared.utils.SystemUtilities
 import com.sendgrid.SendGrid
@@ -38,14 +39,15 @@ object App {
     implicit val systemUtilities: SystemUtilities = SystemUtilities
     val config = ConfigFactory.load()
 
-    val (emailConfiguration, kafkaClientConfiguration, kafkaTopicConfiguration) =
+    val (emailConfiguration, kafkaClientConfiguration, kafkaTopicConfiguration, fileBasedKafkaClientConfiguration) =
       MonadicUtils.unsafe {
         for {
           emailConfiguration <- EmailConfiguration.parse(config)
           kafkaClientConfiguration <- KafkaClientConfiguration.parseLocalConfig(config)
           kafkaTopicConfiguration <- KafkaTopicConfiguration.parse(config)
+          fileBasedKafkaClientConfiguration <- FileBasedKafkaClientConfiguration.parse(config)
         }
-        yield (emailConfiguration, kafkaClientConfiguration, kafkaTopicConfiguration)
+        yield (emailConfiguration, kafkaClientConfiguration, kafkaTopicConfiguration, fileBasedKafkaClientConfiguration)
       }
 
     val ioExecutionContext: IOExecutionContext = new IOExecutionContextImpl(actorSystem)
@@ -57,7 +59,8 @@ object App {
     println { prettyPrintJson(kafkaClientConfiguration) }
     println { prettyPrintJson(kafkaTopicConfiguration) }
 
-    val kafkaConsumer: KafkaConsumer = new KafkaConsumerImpl(kafkaClientConfiguration, kafkaTopicConfiguration)
+//    val kafkaConsumer: KafkaConsumer = new KafkaConsumerImpl(kafkaClientConfiguration, kafkaTopicConfiguration)
+  val kafkaConsumer = new FileBasedKafkaBroker(fileBasedKafkaClientConfiguration)
 
     execute(KafkaTopic.EmailVerification)(dependencies, kafkaConsumer, StubEmailClient)
   }

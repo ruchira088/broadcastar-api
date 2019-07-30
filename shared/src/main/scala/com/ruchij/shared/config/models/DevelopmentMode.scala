@@ -5,6 +5,8 @@ import com.ruchij.enum.Enum
 sealed trait DevelopmentMode extends Enum
 
 object DevelopmentMode {
+  case object Lean extends DevelopmentMode
+
   case object Local extends DevelopmentMode
 
   case object DockerCompose extends DevelopmentMode
