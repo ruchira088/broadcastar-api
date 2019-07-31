@@ -1,6 +1,7 @@
 package com.ruchij.playground
 
 import java.nio.file.Paths
+import java.util.UUID
 
 import akka.actor.ActorSystem
 import com.github.javafaker.Faker
@@ -9,7 +10,7 @@ import com.typesafe.scalalogging.Logger
 
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.{Await, Future, Promise}
 import scala.concurrent.duration.FiniteDuration
 import scala.language.postfixOps
 
@@ -17,15 +18,13 @@ object Playground {
   private val logger: Logger = Logger[Playground.type]
 
   def main(args: Array[String]): Unit = {
-    implicit val actorSystem: ActorSystem = ActorSystem("playground")
-
-    logger.info("Application started.")
-
-    IOUtils.lockFile(
-      Paths.get("file.lock"),
-      waitFor(30 seconds).flatMap(
-        _ => IOUtils.writeToFile(Paths.get("file.lock"), s"${Faker.instance().name().username()}\n".getBytes, append = true)
-      )
+    Await.ready(
+      IOUtils.writeToFile(
+        Paths.get("verify-email.html"),
+        html.verifyEmail.render("Ruchira", UUID.randomUUID()).body.getBytes,
+        append = false
+      ),
+      Duration.Inf
     )
   }
 

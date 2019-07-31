@@ -113,7 +113,7 @@ lazy val emailService =
 lazy val playground =
   (project in file("./playground"))
     .settings(name := "playground", version := "0.0.1", libraryDependencies ++= Seq(faker, logback, scalaLogging))
-    .dependsOn(shared)
+    .dependsOn(shared, userService, emailService, messageService, initialization)
 
 lazy val macros =
   (project in file("./macros"))
