@@ -11,7 +11,7 @@ import scala.util.Try
 trait AvroFormat[A] extends Decoder[A] with Encoder[A] with SchemaFor[A]
 
 object AvroFormat {
-  implicit object DateTimeFormat extends AvroFormat[DateTime] {
+  implicit object DateTimeAvroFormat extends AvroFormat[DateTime] {
     override def encode(dateTime: DateTime, schema: Schema): AnyRef = new Utf8(dateTime.toString)
 
     override def decode(value: Any, schema: Schema): DateTime =

@@ -1,14 +1,13 @@
 package com.ruchij.shared.kafka
 
 import com.ruchij.enum.Enum
-import com.ruchij.shared.avro4s.AvroFormat.DateTimeFormat
 import com.ruchij.macros.utils.ClassUtils
 import com.ruchij.shared.json.JsonFormats
 import com.ruchij.shared.kafka.models.VerificationEmail
-import com.ruchij.shared.models.User
+import com.ruchij.shared.models.{ResetPasswordToken, User}
 import com.ruchij.shared.utils.StringUtils.camelCaseToKebabCase
 import com.sksamuel.avro4s.RecordFormat
-import play.api.libs.json.{Format, JsError, JsResult, JsString, JsSuccess, JsValue, Reads, Writes}
+import play.api.libs.json._
 
 sealed abstract class KafkaTopic[A](implicit val recordFormat: RecordFormat[A], val jsonFormat: Format[A]) extends Enum { self =>
   def name(topicPrefix: String): String =
@@ -16,11 +15,11 @@ sealed abstract class KafkaTopic[A](implicit val recordFormat: RecordFormat[A], 
 }
 
 object KafkaTopic {
-  implicit val userRecordFormat: RecordFormat[User] = RecordFormat[User]
-
   implicit case object UserCreated extends KafkaTopic[User]
 
   implicit case object EmailVerification extends KafkaTopic[VerificationEmail]
+
+  implicit case object ForgotPassword extends KafkaTopic[ResetPasswordToken]
 
   val topics: Set[KafkaTopic[_]] = Enum.values[KafkaTopic[_]]
 

@@ -6,4 +6,6 @@ sealed trait OffsetType extends Enum
 
 object OffsetType {
   case object UserCreated extends OffsetType
+
+  case object ForgotPassword extends OffsetType
 }

@@ -2,8 +2,8 @@ package dao.reset
 
 import java.util.UUID
 
+import com.ruchij.shared.models.ResetPasswordToken
 import com.ruchij.shared.monads.MonadicUtils.OptionTWrapper
-import dao.reset.models.ResetPasswordToken
 import exceptions.FatalDatabaseException
 import javax.inject.{Inject, Singleton}
 import org.joda.time.DateTime
@@ -28,6 +28,7 @@ class SlickResetPasswordTokenDao @Inject()(override protected val dbConfigProvid
     def userId: Rep[UUID] = column[UUID]("user_id")
     def secret: Rep[UUID] = column[UUID]("secret")
     def createdAt: Rep[DateTime] = column[DateTime]("created_at")
+    def index: Rep[Long] = column[Long]("index", O.AutoInc)
     def email: Rep[String] = column[String]("email")
     def expiresAt: Rep[DateTime] = column[DateTime]("expires_at")
     def resetAt: Rep[Option[DateTime]] = column[Option[DateTime]]("reset_at")
@@ -35,7 +36,7 @@ class SlickResetPasswordTokenDao @Inject()(override protected val dbConfigProvid
     def pk: PrimaryKey = primaryKey("reset_password_tokens_pkey", (userId, secret))
 
     override def * : ProvenShape[ResetPasswordToken] =
-      (userId, secret, createdAt, email, expiresAt, resetAt) <> (ResetPasswordToken.apply _ tupled, ResetPasswordToken.unapply)
+      (userId, secret, createdAt, index, email, expiresAt, resetAt) <> (ResetPasswordToken.apply _ tupled, ResetPasswordToken.unapply)
   }
 
   val resetPasswordTokens = TableQuery[ResetPasswordTokenTable]
@@ -49,6 +50,11 @@ class SlickResetPasswordTokenDao @Inject()(override protected val dbConfigProvid
           FatalDatabaseException
         )
       }
+
+  override def getByIndex(index: Long)(implicit executionContext: ExecutionContext): OptionT[Future, ResetPasswordToken] =
+    OptionT {
+      db.run { resetPasswordTokens.filter(_.index === index).result.map(_.headOption) }
+    }
 
   override def getByUserIdAndSecret(userId: UUID, secret: UUID)(
     implicit executionContext: ExecutionContext

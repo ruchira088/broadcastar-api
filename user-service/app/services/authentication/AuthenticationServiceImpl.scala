@@ -2,13 +2,12 @@ package services.authentication
 
 import java.util.UUID
 
-import com.ruchij.shared.models.User
+import com.ruchij.shared.models.{ResetPasswordToken, User}
 import com.ruchij.shared.monads.MonadicUtils._
 import com.ruchij.shared.utils.SystemUtilities
 import config.SessionConfiguration
 import dao.authentication.AuthenticationTokenDao
 import dao.reset.ResetPasswordTokenDao
-import dao.reset.models.ResetPasswordToken
 import dao.user.DatabaseUserDao
 import dao.user.models.DatabaseUser
 import exceptions._
@@ -91,9 +90,10 @@ class AuthenticationServiceImpl @Inject()(
             ResetPasswordToken(
               databaseUser.userId,
               randomUuid(),
-              currentTime().plus(authenticationConfiguration.passwordResetTokenDuration.toMillis.toInt),
-              databaseUser.email,
               currentTime(),
+              -1,
+              databaseUser.email,
+              currentTime().plus(authenticationConfiguration.passwordResetTokenDuration.toMillis.toInt),
               None
             )
           )
