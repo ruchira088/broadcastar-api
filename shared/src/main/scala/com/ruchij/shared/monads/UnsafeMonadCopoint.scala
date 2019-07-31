@@ -13,7 +13,7 @@ object UnsafeMonadCopoint {
       override def copoint[A](value: => Try[A]): A = value.get
     }
 
-  implicit val optionUnsageMonadCopoint: UnsafeMonadCopoint[Option] =
+  implicit val optionUnsafeMonadCopoint: UnsafeMonadCopoint[Option] =
     new UnsafeMonadCopoint[Option] {
       override def copoint[A](value: => Option[A]): A = value.get
     }
