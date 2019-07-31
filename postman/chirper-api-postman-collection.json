@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "70377753-84c5-44b1-a6bf-96c414a92d93",
+		"_postman_id": "aee14ad2-a6ca-43ab-b9ac-fcb2a58d27f4",
 		"name": "Chirper API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -10,16 +10,11 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
 				"url": {
-					"raw": "localhost:9000/health",
+					"raw": "{{hostUrl}}/health",
 					"host": [
-						"localhost"
+						"{{hostUrl}}"
 					],
-					"port": "9000",
 					"path": [
 						"health"
 					]
@@ -37,17 +32,16 @@
 					"formdata": [
 						{
 							"key": "profile-picture",
-							"type": "file",
-							"src": ""
+							"value": "",
+							"type": "file"
 						}
 					]
 				},
 				"url": {
-					"raw": "localhost:9000/resource",
+					"raw": "{{hostUrl}}/resource",
 					"host": [
-						"localhost"
+						"{{hostUrl}}"
 					],
-					"port": "9000",
 					"path": [
 						"resource"
 					]
@@ -60,16 +54,11 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
 				"url": {
-					"raw": "localhost:9000/resource/:key",
+					"raw": "{{hostUrl}}/resource/:key",
 					"host": [
-						"localhost"
+						"{{hostUrl}}"
 					],
-					"port": "9000",
 					"path": [
 						"resource",
 						":key"
@@ -144,11 +133,10 @@
 					"raw": "{\n\t\"username\": \"{{username}}\",\n\t\"firstName\": \"{{firstName}}\",\n\t\"lastName\": \"{{lastName}}\",\n\t\"password\": \"{{password}}\",\n\t\"email\": \"{{email}}\"\n}"
 				},
 				"url": {
-					"raw": "localhost:9000/user",
+					"raw": "{{hostUrl}}/user",
 					"host": [
-						"localhost"
+						"{{hostUrl}}"
 					],
-					"port": "9000",
 					"path": [
 						"user"
 					]
@@ -161,19 +149,44 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
 				"url": {
-					"raw": "localhost:9000/username/{{username}}",
+					"raw": "{{hostUrl}}/username/{{username}}",
 					"host": [
-						"localhost"
+						"{{hostUrl}}"
 					],
-					"port": "9000",
 					"path": [
 						"username",
 						"{{username}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify email",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"verificationToken\": \"{{verificationToken}}\"\n}"
+				},
+				"url": {
+					"raw": "{{hostUrl}}/user/{{userId}}/email-verification",
+					"host": [
+						"{{hostUrl}}"
+					],
+					"path": [
+						"user",
+						"{{userId}}",
+						"email-verification"
 					]
 				}
 			},
@@ -208,11 +221,10 @@
 					"raw": "{\n\t\"username\": \"{{username}}\",\n\t\"password\": \"{{password}}\"\n}"
 				},
 				"url": {
-					"raw": "localhost:9000/session",
+					"raw": "{{hostUrl}}/session",
 					"host": [
-						"localhost"
+						"{{hostUrl}}"
 					],
-					"port": "9000",
 					"path": [
 						"session"
 					]
@@ -221,31 +233,86 @@
 			"response": []
 		},
 		{
-			"name": "Verify email",
+			"name": "Authenticated user",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{sessionToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{hostUrl}}/user",
+					"host": [
+						"{{hostUrl}}"
+					],
+					"path": [
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Forgot password",
 			"request": {
 				"method": "POST",
 				"header": [
 					{
 						"key": "Content-Type",
 						"name": "Content-Type",
-						"type": "text",
-						"value": "application/json"
+						"value": "application/json",
+						"type": "text"
 					}
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"verificationToken\": \"{{verificationToken}}\"\n}"
+					"raw": "{\n\t\"email\": \"{{email}}\"\n}"
 				},
 				"url": {
-					"raw": "localhost:9000/user/{{userId}}/email-verification",
+					"raw": "{{hostUrl}}/password/reset-token",
 					"host": [
-						"localhost"
+						"{{hostUrl}}"
 					],
-					"port": "9000",
+					"path": [
+						"password",
+						"reset-token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Change password",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"secret\": \"\",\n\t\"password\": \"\"\n}"
+				},
+				"url": {
+					"raw": "{{hostUrl}}/user/{{userId}}/password",
+					"host": [
+						"{{hostUrl}}"
+					],
 					"path": [
 						"user",
 						"{{userId}}",
-						"email-verification"
+						"password"
 					]
 				}
 			},

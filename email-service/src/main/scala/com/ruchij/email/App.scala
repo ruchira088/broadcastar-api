@@ -59,8 +59,8 @@ object App {
     println { prettyPrintJson(kafkaClientConfiguration) }
     println { prettyPrintJson(kafkaTopicConfiguration) }
 
-//    val kafkaConsumer: KafkaConsumer = new KafkaConsumerImpl(kafkaClientConfiguration, kafkaTopicConfiguration)
-  val kafkaConsumer = new FileBasedKafkaBroker(fileBasedKafkaClientConfiguration)
+    val kafkaConsumer: KafkaConsumer = new KafkaConsumerImpl(kafkaClientConfiguration, kafkaTopicConfiguration)
+//  val kafkaConsumer = new FileBasedKafkaBroker(fileBasedKafkaClientConfiguration)
 
     execute(KafkaTopic.EmailVerification)(dependencies, kafkaConsumer, StubEmailClient)
   }
