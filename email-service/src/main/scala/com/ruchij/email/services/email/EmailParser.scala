@@ -4,6 +4,8 @@ import com.ruchij.email.services.email.models.Email
 import com.ruchij.shared.kafka.models.VerificationEmail
 import play.twirl.api.HtmlFormat
 
+import html.EmailVerificationTemplate
+
 import scala.util.{Success, Try}
 
 sealed trait EmailParser[-A, +B] {
@@ -19,7 +21,11 @@ object EmailParser {
           "ruchira088@gmail.com",
           //        verificationEmail.user.email,
           "Welcome to Chirper",
-          html.verifyEmail(verificationEmail.user.firstName, verificationEmail.emailVerificationToken.secret)
+          EmailVerificationTemplate(
+            verificationEmail.user.firstName,
+            verificationEmail.emailVerificationToken.userId,
+            verificationEmail.emailVerificationToken.secret
+          )
         )
       }
   }

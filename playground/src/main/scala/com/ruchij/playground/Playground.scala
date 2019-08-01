@@ -4,14 +4,14 @@ import java.nio.file.Paths
 import java.util.UUID
 
 import akka.actor.ActorSystem
-import com.github.javafaker.Faker
 import com.ruchij.shared.utils.IOUtils
 import com.typesafe.scalalogging.Logger
 
-import scala.concurrent.duration._
+import html.EmailVerificationTemplate
+
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.{FiniteDuration, _}
 import scala.concurrent.{Await, Future, Promise}
-import scala.concurrent.duration.FiniteDuration
 import scala.language.postfixOps
 
 object Playground {
@@ -21,7 +21,7 @@ object Playground {
     Await.ready(
       IOUtils.writeToFile(
         Paths.get("verify-email.html"),
-        html.verifyEmail.render("Ruchira", UUID.randomUUID()).body.getBytes,
+        EmailVerificationTemplate("Ruchira", UUID.randomUUID(), UUID.randomUUID()).body.getBytes,
         append = false
       ),
       Duration.Inf

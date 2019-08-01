@@ -5,7 +5,7 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
 import com.ruchij.email.config.EmailConfiguration
-import com.ruchij.email.services.email.client.{EmailClient, StubEmailClient}
+import com.ruchij.email.services.email.client.{EmailClient, SendGridEmailClient, StubEmailClient}
 import com.ruchij.email.services.email.{EmailParser, EmailSerializer}
 import com.ruchij.shared.ec.{IOExecutionContext, IOExecutionContextImpl}
 import com.ruchij.shared.json.JsonUtils.prettyPrintJson
@@ -59,10 +59,10 @@ object App {
     println { prettyPrintJson(kafkaClientConfiguration) }
     println { prettyPrintJson(kafkaTopicConfiguration) }
 
-    val kafkaConsumer: KafkaConsumer = new KafkaConsumerImpl(kafkaClientConfiguration, kafkaTopicConfiguration)
-//  val kafkaConsumer = new FileBasedKafkaBroker(fileBasedKafkaClientConfiguration)
+//    val kafkaConsumer: KafkaConsumer = new KafkaConsumerImpl(kafkaClientConfiguration, kafkaTopicConfiguration)
+    val kafkaConsumer = new FileBasedKafkaBroker(fileBasedKafkaClientConfiguration)
 
-    execute(KafkaTopic.EmailVerification)(dependencies, kafkaConsumer, StubEmailClient)
+    execute(KafkaTopic.EmailVerification)(dependencies, kafkaConsumer, SendGridEmailClient)
   }
 
   def execute[Message, EmailBody, ClientMessage](

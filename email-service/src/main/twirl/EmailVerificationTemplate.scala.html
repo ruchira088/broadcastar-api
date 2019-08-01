@@ -1,0 +1,49 @@
+@import java.util.UUID
+
+@(firstName: String, userId: UUID, secret: UUID)
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Welcome to Chirper</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <style>
+                body {
+                    color: black;
+                    text-align: center;
+                }
+
+                .confirm-email-button {
+                    background: #42ADE3;
+                    display: inline-block;
+                    padding: 10px;
+                    border-radius: 5px;
+                    color: white;
+                }
+
+                .confirm-email-button a {
+                    color: white;
+                    text-decoration: none;
+                }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>Welcome the Chirper</h1>
+            <img src="https://s3-ap-southeast-2.amazonaws.com/public.chirper.ruchij.com/chirper-logo-100x100.png" alt="Chirper logo">
+        </header>
+
+        <section>
+            <h3>Hello @firstName,</h3>
+            <p>
+                You are just one step away.
+            </p>
+            <p>
+                Click on the button below to confirm your email address.
+            </p>
+            <div class="confirm-email-button">
+                <a href="https://s3-ap-southeast-2.amazonaws.com/public.chirper.ruchij.com/chirper-logo.svg">Confirm Email Address</a>
+            </div>
+        </section>
+    </body>
+</html>
