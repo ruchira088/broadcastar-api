@@ -8,7 +8,7 @@ logs
 .DS_Store
 .terraform
 /user-service/ci/ansible/output
-/secrets.env
 /file-based-kafka-broker.txt
 /chirper-user.mv.db
 /chirper-user.trace.db
+/secrets/set-secrets.sh

@@ -12,4 +12,4 @@ target
 /chirper-user.trace.db
 /chirper-user.mv.db
 /file-based-kafka-broker.txt
-/secrets.env
+/secrets/set-secrets.sh

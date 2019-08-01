@@ -29,8 +29,6 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: "kafka-broker:9092"
       SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
       DEV_MODE: "DockerCompose"
-#    env_file:
-#      - secrets.env
 
   email-service:
     build: .

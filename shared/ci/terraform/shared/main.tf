@@ -8,6 +8,10 @@ terraform {
 }
 
 locals {
+  icon = "chirper-logo.ico"
+
+  svg = "chirper-logo.svg"
+
   png_images = [
     "chirper-logo-48x48.png",
     "chirper-logo-100x100.png",
@@ -23,16 +27,16 @@ resource "aws_s3_bucket" "public_resource" {
 
 resource "aws_s3_bucket_object" "logo" {
   bucket = aws_s3_bucket.public_resource.bucket
-  key = "chirper-logo.svg"
-  source = "${path.module}/../../../assets/chirper-logo.svg"
+  key = local.svg
+  source = "${path.module}/../../../assets/${local.svg}"
   content_type = "image/svg+xml"
   acl = "public-read"
 }
 
 resource "aws_s3_bucket_object" "icon" {
   bucket = aws_s3_bucket.public_resource.bucket
-  key = "chirper-logo.ico"
-  source = "${path.module}/../../../assets/chirper-logo.ico"
+  key = local.icon
+  source = "${path.module}/../../../assets/${local.icon}"
   content_type = "image/x-icon"
   acl = "public-read"
 }
