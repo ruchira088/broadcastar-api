@@ -17,4 +17,6 @@ trait UserService {
   def getUserById(userId: UUID)(implicit executionContext: ExecutionContext): Future[User]
 
   def getEmailVerificationToken(userId: UUID)(implicit executionContext: ExecutionContext): Future[EmailVerificationToken]
+
+  def resendVerificationEmail(email: String)(implicit executionContext: ExecutionContext): Future[EmailVerificationToken]
 }

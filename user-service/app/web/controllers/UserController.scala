@@ -16,7 +16,7 @@ import web.requests.models.ResetPasswordRequest.resetPasswordRequestValidator
 import web.requests.models.UserLoginRequest.userLoginRequestValidator
 import web.requests.models._
 import web.responses.ResponseCreator
-import web.responses.models.{ForgotPasswordResponse, SessionTokenResponse, UsernameResponse}
+import web.responses.models.{ForgotPasswordResponse, ResendVerificationEmailResponse, SessionTokenResponse, UsernameResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -73,13 +73,24 @@ class UserController @Inject()(
         }
       }
 
+  def resendVerificationEmail(): Action[JsValue] =
+    Action.async(parse.json) { request =>
+      ResponseCreator.create(Ok) {
+        for {
+          resendVerificationEmailRequest <- Future.fromTry(RequestParser.parse[ResendVerificationEmailRequest](request))
+          emailVerificationToken <- userService.resendVerificationEmail(resendVerificationEmailRequest.email)
+        }
+        yield ResendVerificationEmailResponse(emailVerificationToken.email)
+      }
+    }
+
   def forgotPassword(): Action[JsValue] =
     Action.async(parse.json) { request =>
       ResponseCreator.create(Created) {
         for {
           ForgotPasswordRequest(email) <- Future.fromTry(RequestParser.parse[ForgotPasswordRequest](request))
-          userId <- authenticationService.forgotPassword(email)
-        } yield ForgotPasswordResponse(userId, email)
+          resetPasswordToken <- authenticationService.forgotPassword(email)
+        } yield ForgotPasswordResponse(resetPasswordToken.email)
       }
     }
 

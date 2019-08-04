@@ -81,8 +81,8 @@ class AuthenticationServiceImpl @Inject()(
       } yield updatedAuthenticationToken
     }
 
-  override def forgotPassword(email: String)(implicit executionContext: ExecutionContext): Future[UserId] =
-    withDefault(Future.failed(ResourceNotFoundException(s"User not found (email = $email)"))) {
+  override def forgotPassword(email: String)(implicit executionContext: ExecutionContext): Future[ResetPasswordToken] =
+    withDefault[Future, ResetPasswordToken](Future.failed(ResourceNotFoundException(s"User not found (email = $email)"))) {
       databaseUserDao
         .getByEmail(email)
         .flatMapF { databaseUser =>
@@ -98,7 +98,6 @@ class AuthenticationServiceImpl @Inject()(
             )
           )
         }
-        .map(_.userId)
     }
 
   override def resetPassword(userId: UUID, resetPasswordRequest: ResetPasswordRequest)(implicit executionContext: ExecutionContext): Future[User] =

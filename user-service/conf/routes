@@ -12,6 +12,8 @@ PUT     /user/:userId/password      web.controllers.UserController.resetPassword
 
 PUT     /user/:userId/email-verification    web.controllers.UserController.verifyEmail(userId: java.util.UUID)
 
+POST    /email/verification         web.controllers.UserController.resendVerificationEmail()
+
 POST    /session                    web.controllers.UserController.sessionToken()
 
 POST    /resource                   web.controllers.ResourceController.upload()

@@ -51,20 +51,9 @@ class UserServiceImpl @Inject()(
 
       saltedHashedPassword <- cryptographyService.hashPassword(createUserRequest.password)
 
-      databaseUser = DatabaseUser.from(createUserRequest, saltedHashedPassword)
+      persistedUser <- databaseUserDao.insert(DatabaseUser.from(createUserRequest, saltedHashedPassword))
 
-      emailVerificationToken <- emailVerificationTokenDao.insert(
-        EmailVerificationToken(
-          databaseUser.userId,
-          systemUtilities.randomUuid(),
-          -1,
-          databaseUser.email,
-          systemUtilities.currentTime(),
-          None
-        )
-      )
-
-      persistedUser <- databaseUserDao.insert(databaseUser)
+      emailVerificationToken <- insertEmailVerificationToken(persistedUser.userId, persistedUser.email)
 
     } yield DatabaseUser.toUser(persistedUser)
 
@@ -102,4 +91,20 @@ class UserServiceImpl @Inject()(
           Future.successful
         }
       }
+
+  override def resendVerificationEmail(email: String)(implicit executionContext: ExecutionContext): Future[EmailVerificationToken] =
+    withDefault[Future, EmailVerificationToken] {
+      logger.warn(s"$email not found")
+      Future.failed(ResourceNotFoundException(s"$email not found"))
+    } {
+      databaseUserDao.getByEmail(email)
+        .flatMapF { databaseUser =>
+          insertEmailVerificationToken(databaseUser.userId, databaseUser.email)
+        }
+    }
+
+  private def insertEmailVerificationToken(userId: UUID, email: String)(implicit executionContext: ExecutionContext): Future[EmailVerificationToken] =
+    emailVerificationTokenDao.insert {
+      EmailVerificationToken(userId, systemUtilities.randomUuid(), -1, email, systemUtilities.currentTime(), None)
+    }
 }

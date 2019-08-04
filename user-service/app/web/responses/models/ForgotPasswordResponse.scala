@@ -4,7 +4,7 @@ import java.util.UUID
 
 import play.api.libs.json.{Json, OWrites}
 
-case class ForgotPasswordResponse(userId: UUID, email: String)
+case class ForgotPasswordResponse(email: String)
 
 object ForgotPasswordResponse {
   implicit val forgotPasswordResponseWrites: OWrites[ForgotPasswordResponse] =

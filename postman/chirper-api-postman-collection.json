@@ -317,6 +317,35 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Resend verification email",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"email\": \"{{email}}\"\n}"
+				},
+				"url": {
+					"raw": "{{hostUrl}}/email/verification",
+					"host": [
+						"{{hostUrl}}"
+					],
+					"path": [
+						"email",
+						"verification"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }
