@@ -9,6 +9,7 @@ import play.api.libs.json.{Json, OFormat}
 case class EmailVerificationToken(
   userId: UUID,
   secret: UUID,
+  index: Long,
   email: String,
   createdAt: DateTime,
   verifiedAt: Option[DateTime]

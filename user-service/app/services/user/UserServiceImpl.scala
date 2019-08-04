@@ -7,6 +7,7 @@ import com.ruchij.shared.exceptions.aggregation.AggregatedExistingResourceExcept
 import com.ruchij.shared.models.{EmailVerificationToken, User}
 import com.ruchij.shared.monads.MonadicUtils._
 import com.ruchij.shared.utils.SystemUtilities
+import com.typesafe.scalalogging.Logger
 import dao.user.DatabaseUserDao
 import dao.user.models.DatabaseUser
 import dao.verification.EmailVerificationTokenDao
@@ -25,6 +26,8 @@ class UserServiceImpl @Inject()(
   cryptographyService: CryptographyService
 )(implicit systemUtilities: SystemUtilities)
     extends UserService {
+  private val logger = Logger[UserServiceImpl]
+
   override def createUser(
     createUserRequest: CreateUserRequest
   )(implicit executionContext: ExecutionContext): Future[User] =
@@ -54,6 +57,7 @@ class UserServiceImpl @Inject()(
         EmailVerificationToken(
           databaseUser.userId,
           systemUtilities.randomUuid(),
+          -1,
           databaseUser.email,
           systemUtilities.currentTime(),
           None
@@ -68,9 +72,10 @@ class UserServiceImpl @Inject()(
     databaseUserDao.getByUsername(username).nonEmpty
 
   override def verifyEmail(userId: UUID, secret: UUID)(implicit executionContext: ExecutionContext): Future[User] =
-    (emailVerificationTokenDao.verifyEmail(userId, secret) ifEmpty Future.failed(
+    (emailVerificationTokenDao.verifyEmail(userId, secret) ifEmpty Future.failed {
+      logger.warn(s"Email verification token not found (userId: $userId, secret: $secret)")
       ResourceNotFoundException("Email verification token not found")
-    )).flatMap { _ =>
+    }).flatMap { _ =>
       withDefault(Future.failed(FatalDatabaseException)) {
         for {
           _ <- databaseUserDao.verifyEmail(userId)
@@ -80,16 +85,20 @@ class UserServiceImpl @Inject()(
     }
 
   override def getUserById(userId: UUID)(implicit executionContext: ExecutionContext): Future[User] =
-    withDefault(Future.failed(ResourceNotFoundException(s"User not found (id = $userId)"))) {
+    withDefault {
+      logger.warn(s"User not found (id = $userId)")
+      Future.failed(ResourceNotFoundException(s"User not found (id = $userId)"))
+    } {
       databaseUserDao.getByUserId(userId).map(DatabaseUser.toUser)
     }
 
   override def getEmailVerificationToken(userId: UUID)(implicit executionContext: ExecutionContext): Future[EmailVerificationToken] =
     emailVerificationTokenDao.getByUserId(userId)
       .flatMap {
-        _.headOption.fold[Future[EmailVerificationToken]](
-          Future.failed(ResourceNotFoundException(s"Email verification tokens not found for user (id = $userId)"))
-        ) {
+        _.headOption.fold[Future[EmailVerificationToken]] {
+          logger.warn(s"Email verification token not found for user (id = $userId)")
+          Future.failed(ResourceNotFoundException(s"Email verification token not found for user (id = $userId)"))
+        } {
           Future.successful
         }
       }

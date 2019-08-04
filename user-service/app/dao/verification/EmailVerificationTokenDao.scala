@@ -12,5 +12,7 @@ trait EmailVerificationTokenDao {
 
   def getByUserId(userId: UUID)(implicit executionContext: ExecutionContext): Future[List[EmailVerificationToken]]
 
+  def getByIndex(index: Long)(implicit executionContext: ExecutionContext): OptionT[Future, EmailVerificationToken]
+
   def verifyEmail(userId: UUID, secret: UUID)(implicit executionContext: ExecutionContext): OptionT[Future, EmailVerificationToken]
 }

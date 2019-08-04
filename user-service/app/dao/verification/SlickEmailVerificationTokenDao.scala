@@ -30,6 +30,7 @@ class SlickEmailVerificationTokenDao @Inject()(override protected val dbConfigPr
       extends Table[EmailVerificationToken](tag, SlickEmailVerificationTokenDao.TABLE_NAME) {
     def userId: Rep[UUID] = column[UUID]("user_id")
     def secret: Rep[UUID] = column[UUID]("secret")
+    def index: Rep[Long] = column[Long]("index", O.AutoInc)
     def email: Rep[String] = column[String]("email")
     def createdAt: Rep[DateTime] = column[DateTime]("created_at")
     def verifiedAt: Rep[Option[DateTime]] = column[Option[DateTime]]("verified_at")
@@ -37,7 +38,7 @@ class SlickEmailVerificationTokenDao @Inject()(override protected val dbConfigPr
     def pk: PrimaryKey = primaryKey("email_verification_tokens_pkey", (userId, secret))
 
     override def * : ProvenShape[EmailVerificationToken] =
-      (userId, secret, email, createdAt, verifiedAt) <> (EmailVerificationToken.apply _ tupled, EmailVerificationToken.unapply)
+      (userId, secret, index, email, createdAt, verifiedAt) <> (EmailVerificationToken.apply _ tupled, EmailVerificationToken.unapply)
   }
 
   val emailVerificationTokens = TableQuery[EmailVerificationTokenTable]
@@ -59,6 +60,14 @@ class SlickEmailVerificationTokenDao @Inject()(override protected val dbConfigPr
         emailVerificationTokens.filter(_.userId === userId).sortBy(_.createdAt.desc).result
       }
       .map(_.toList)
+
+
+  override def getByIndex(index: Long)(implicit executionContext: ExecutionContext): OptionT[Future, EmailVerificationToken] =
+    OptionT {
+      db.run {
+        emailVerificationTokens.filter(_.index === index).result.headOption
+      }
+    }
 
   private def getByUserIdAndSecret(userId: UUID, secret: UUID)(
     implicit executionContext: ExecutionContext

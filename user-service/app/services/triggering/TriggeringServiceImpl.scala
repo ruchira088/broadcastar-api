@@ -3,7 +3,7 @@ package services.triggering
 import akka.actor.Cancellable
 import akka.stream.scaladsl.Source
 import com.google.inject.{Inject, Singleton}
-import com.ruchij.shared.models.ResetPasswordToken
+import com.ruchij.shared.models.{EmailVerificationToken, ResetPasswordToken}
 import com.ruchij.shared.utils.SystemUtilities
 import com.typesafe.scalalogging.Logger
 import config.TriggerConfiguration
@@ -11,6 +11,7 @@ import dao.offset.OffsetDao
 import dao.reset.ResetPasswordTokenDao
 import dao.user.DatabaseUserDao
 import dao.user.models.DatabaseUser
+import dao.verification.EmailVerificationTokenDao
 import scalaz.OptionT
 import scalaz.std.scalaFuture.futureInstance
 import services.triggering.models.{Offset, OffsetType}
@@ -22,6 +23,7 @@ import scala.language.postfixOps
 class TriggeringServiceImpl @Inject()(
   databaseUserDao: DatabaseUserDao,
   resetPasswordTokenDao: ResetPasswordTokenDao,
+  emailVerificationTokenDao: EmailVerificationTokenDao,
   offsetDao: OffsetDao,
   triggerConfiguration: TriggerConfiguration
 )(implicit systemUtilities: SystemUtilities)
@@ -50,6 +52,17 @@ class TriggeringServiceImpl @Inject()(
 
   override def commitForgotPassword(resetPasswordToken: ResetPasswordToken)(implicit executionContext: ExecutionContext): Future[Offset] =
     commit(OffsetType.ForgotPassword, resetPasswordToken.index)
+
+  override def emailVerification()(implicit executionContext: ExecutionContext): Source[EmailVerificationToken, Cancellable] =
+    poll(OffsetType.EmailVerification, emailVerificationTokenDao.getByIndex)
+      .map {
+        emailVerificationToken =>
+          logger.info(s"Triggering email verification token for ${emailVerificationToken.email}")
+          emailVerificationToken
+      }
+
+  override def commitEmailVerification(emailVerificationToken: EmailVerificationToken)(implicit executionContext: ExecutionContext): Future[Offset] =
+    commit(OffsetType.EmailVerification, emailVerificationToken.index)
 
   private def poll[A](offsetType: OffsetType, getByIndex: Long => OptionT[Future, A])(implicit executionContext: ExecutionContext): Source[A, Cancellable] =
     Source

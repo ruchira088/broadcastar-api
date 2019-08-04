@@ -7,7 +7,7 @@ import akka.stream.scaladsl.{Keep, Sink}
 import com.ruchij.shared.kafka.KafkaMessage
 import com.ruchij.shared.kafka.models.VerificationEmail
 import com.ruchij.shared.kafka.producer.KafkaProducer
-import com.ruchij.shared.models.ResetPasswordToken
+import com.ruchij.shared.models.{EmailVerificationToken, ResetPasswordToken}
 import com.typesafe.scalalogging.Logger
 import dao.user.models.DatabaseUser
 import javax.inject.{Inject, Singleton}
@@ -27,11 +27,10 @@ class BackgroundServiceImpl @Inject()(triggeringService: TriggeringService, user
   def publishNewUser(databaseUser: DatabaseUser)(implicit executionContext: ExecutionContext): Future[RecordMetadata] =
     publish(KafkaMessage(DatabaseUser.toUser(databaseUser)), databaseUser.username)
 
-  def verificationEmail(databaseUser: DatabaseUser)(implicit executionContext: ExecutionContext): Future[RecordMetadata] =
-    userService.getEmailVerificationToken(databaseUser.userId)
+  def verificationEmail(emailVerificationToken: EmailVerificationToken)(implicit executionContext: ExecutionContext): Future[RecordMetadata] =
+    userService.getUserById(emailVerificationToken.userId)
       .flatMap {
-        emailVerificationToken =>
-          publish(KafkaMessage(VerificationEmail(emailVerificationToken, DatabaseUser.toUser(databaseUser))), s"${databaseUser.username} <${databaseUser.email}>")
+        user => publish(KafkaMessage(VerificationEmail(emailVerificationToken, user)), s"${user.username} <${user.email}>")
       }
 
   def forgotPassword(resetPasswordToken: ResetPasswordToken)(implicit executionContext: ExecutionContext): Future[RecordMetadata] =
@@ -53,11 +52,8 @@ class BackgroundServiceImpl @Inject()(triggeringService: TriggeringService, user
       .userCreated()
       .mapAsync(parallelism = 1) { databaseUser =>
         logger.info(s"Received new user trigger: ${databaseUser.username}")
-
-        Future.sequence {
-          List(publishNewUser(databaseUser), verificationEmail(databaseUser))
-        }
-          .flatMap(_ => triggeringService.commitUserCreated(databaseUser))
+          publishNewUser(databaseUser)
+            .flatMap(_ => triggeringService.commitUserCreated(databaseUser))
       }
       .toMat(Sink.ignore)(Keep.both)
       .run()
@@ -74,11 +70,24 @@ class BackgroundServiceImpl @Inject()(triggeringService: TriggeringService, user
       .toMat(Sink.ignore)(Keep.both)
       .run()
 
+  def emailVerificationEvents()(implicit executionContext: ExecutionContext): (Cancellable, Future[Done]) =
+    triggeringService.emailVerification()
+      .mapAsync(parallelism = 1) {
+        emailVerificationToken =>
+          logger.info(s"Received email verification event: ${emailVerificationToken.email}")
+
+          verificationEmail(emailVerificationToken)
+            .flatMap(_ => triggeringService.commitEmailVerification(emailVerificationToken))
+      }
+      .toMat(Sink.ignore)(Keep.both)
+      .run()
+
   override def start()(implicit executionContext: ExecutionContext): (Cancellable, Future[Done]) =
     BackgroundService.combine {
       List(
         userCreatedEvents(),
-        forgotPasswordEvents()
+        forgotPasswordEvents(),
+        emailVerificationEvents()
       )
     }
 }

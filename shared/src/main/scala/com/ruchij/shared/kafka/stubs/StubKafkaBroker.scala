@@ -102,17 +102,12 @@ object StubKafkaBroker {
   implicit def verificationEmailGenerator(
     implicit systemUtilities: SystemUtilities
   ): RandomGenerator[VerificationEmail] =
-    RandomGenerator.userGenerator.map { user =>
-      VerificationEmail(
-        EmailVerificationToken(
-          user.userId,
-          systemUtilities.randomUuid(),
-          user.email,
-          systemUtilities.currentTime(),
-          None
-        ),
-        user
-      )
+    for {
+      user <- RandomGenerator.userGenerator
+      index <- RandomGenerator.intGenerator(1000)
     }
-
+    yield VerificationEmail(
+      EmailVerificationToken(user.userId, systemUtilities.randomUuid(), index, user.email, systemUtilities.currentTime(), None),
+      user
+    )
 }

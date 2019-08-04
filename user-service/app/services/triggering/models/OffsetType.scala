@@ -8,4 +8,6 @@ object OffsetType {
   case object UserCreated extends OffsetType
 
   case object ForgotPassword extends OffsetType
+
+  case object EmailVerification extends OffsetType
 }

@@ -1,6 +1,5 @@
 package com.ruchij.shared.utils
 
-import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 import com.github.javafaker.Faker
@@ -31,6 +30,8 @@ object RandomGenerator {
 
   def finiteDurationGenerator(maxMillis: Int): RandomGenerator[FiniteDuration] =
     () => FiniteDuration(Random.nextInt(maxMillis), TimeUnit.MILLISECONDS)
+
+  def intGenerator(maximum: Int): RandomGenerator[Int] = () => math.abs(Random.nextInt(maximum))
 
   implicit def optionGenerator[A](implicit randomGenerator: RandomGenerator[A]): RandomGenerator[Option[A]] =
     booleanGenerator.flatMap { boolean => if (boolean) randomGenerator.map(Some.apply) else generator(None) }
