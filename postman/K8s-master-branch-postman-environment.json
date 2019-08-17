@@ -1,0 +1,14 @@
+{
+	"id": "cc44e66a-0ae2-48c1-91aa-8fd2b290eda0",
+	"name": "K8s master branch",
+	"values": [
+		{
+			"key": "hostUrl",
+			"value": "https://master.chirper-user.ruchij.com",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2019-08-17T11:18:21.309Z",
+	"_postman_exported_using": "Postman/7.5.0"
+}

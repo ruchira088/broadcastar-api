@@ -13,7 +13,7 @@ import com.ruchij.shared.kafka.KafkaTopic
 import com.ruchij.shared.kafka.config.{FileBasedKafkaClientConfiguration, KafkaClientConfiguration, KafkaTopicConfiguration}
 import com.ruchij.shared.kafka.consumer.{KafkaConsumer, KafkaConsumerImpl}
 import com.ruchij.shared.kafka.file.FileBasedKafkaBroker
-import com.ruchij.shared.monads.MonadicUtils
+import com.ruchij.shared.monads.MonadicUtils.unsafe
 import com.ruchij.shared.utils.SystemUtilities
 import com.sendgrid.SendGrid
 import com.typesafe.config.ConfigFactory
@@ -40,10 +40,10 @@ object App {
     val config = ConfigFactory.load()
 
     val (emailConfiguration, kafkaClientConfiguration, kafkaTopicConfiguration, fileBasedKafkaClientConfiguration) =
-      MonadicUtils.unsafe {
+      unsafe {
         for {
           emailConfiguration <- EmailConfiguration.parse(config)
-          kafkaClientConfiguration <- KafkaClientConfiguration.parseLocalConfig(config)
+          kafkaClientConfiguration <- KafkaClientConfiguration.parseConfluentConfig(config)
           kafkaTopicConfiguration <- KafkaTopicConfiguration.parse(config)
           fileBasedKafkaClientConfiguration <- FileBasedKafkaClientConfiguration.parse(config)
         }
@@ -59,8 +59,8 @@ object App {
     println { prettyPrintJson(kafkaClientConfiguration) }
     println { prettyPrintJson(kafkaTopicConfiguration) }
 
-//    val kafkaConsumer: KafkaConsumer = new KafkaConsumerImpl(kafkaClientConfiguration, kafkaTopicConfiguration)
-    val kafkaConsumer = new FileBasedKafkaBroker(fileBasedKafkaClientConfiguration)
+    val kafkaConsumer: KafkaConsumer = new KafkaConsumerImpl(kafkaClientConfiguration, kafkaTopicConfiguration)
+//    val kafkaConsumer = new FileBasedKafkaBroker(fileBasedKafkaClientConfiguration)
 
     execute(KafkaTopic.EmailVerification)(dependencies, kafkaConsumer, SendGridEmailClient)
   }

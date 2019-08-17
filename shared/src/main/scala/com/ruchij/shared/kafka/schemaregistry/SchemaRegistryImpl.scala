@@ -13,7 +13,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class SchemaRegistryImpl @Inject()(wsClient: WSClient, kafkaClientConfiguration: KafkaClientConfiguration) extends SchemaRegistry {
   override def removeSchema(topicName: String)(implicit executionContext: ExecutionContext): Future[Boolean] =
-    SchemaRegistryImpl.wsRequest(wsClient, s"subject/$topicName")(kafkaClientConfiguration)
+    SchemaRegistryImpl.wsRequest(wsClient, s"subjects/$topicName")(kafkaClientConfiguration)
       .execute(HttpVerbs.DELETE)
       .flatMap(handleResponse[List[Int]])
       .map(_ => true)
@@ -22,7 +22,7 @@ class SchemaRegistryImpl @Inject()(wsClient: WSClient, kafkaClientConfiguration:
       }
 
   override def listSchemas()(implicit executionContext: ExecutionContext): Future[List[String]] =
-    SchemaRegistryImpl.wsRequest(wsClient, "subject")(kafkaClientConfiguration)
+    SchemaRegistryImpl.wsRequest(wsClient, "subjects")(kafkaClientConfiguration)
       .execute(HttpVerbs.GET)
       .flatMap(handleResponse[List[String]])
 }
