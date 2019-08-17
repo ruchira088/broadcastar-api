@@ -68,8 +68,8 @@ object MonadicUtils {
     override def bind[A, B](fa: Try[A])(f: A => Try[B]): Try[B] = fa.flatMap(f)
   }
 
-  implicit def readerMonadError[Input, M[_], Error](implicit monadError: MonadError[M, Error]): MonadError[({ type T[A] = ReaderT[M, Input, A] })#T, Error] =
-    new MonadError[({ type T[A] = ReaderT[M, Input, A] })#T, Error] {
+  implicit def readerMonadError[Input, M[_], Error](implicit monadError: MonadError[M, Error]): MonadError[ReaderT[M, Input, ?], Error] =
+    new MonadError[ReaderT[M, Input, ?], Error] {
       override def raiseError[A](error: Error): ReaderT[M, Input, A] =
         ReaderT { _ => monadError.raiseError(error) }
 

@@ -1,4 +1,5 @@
 import Dependencies._
+import sbt._
 
 inThisBuild {
   Seq(
@@ -77,6 +78,7 @@ lazy val shared =
       name := "shared",
       version := "0.0.1",
       libraryDependencies ++= Seq(
+        compilerPlugin(kindProjector),
         ws,
         scalaz,
         jodaTime,
@@ -90,7 +92,7 @@ lazy val shared =
         avro4s,
         faker
       ),
-      libraryDependencies ++= Seq(scalaTestPlusPlay).map(_ % Test)
+      libraryDependencies ++= Seq(scalaTestPlusPlay).map(_ % Test),
     )
     .dependsOn(macros)
 
@@ -109,6 +111,11 @@ lazy val emailService =
       }
     )
     .dependsOn(shared)
+
+lazy val administration =
+  (project in file("./administration"))
+    .settings(name := "administration", version := "0.0.1")
+    .dependsOn(shared, userService, emailService, messageService, initialization)
 
 lazy val playground =
   (project in file("./playground"))

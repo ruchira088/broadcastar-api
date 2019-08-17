@@ -45,6 +45,8 @@ object Dependencies {
 
   lazy val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2"
 
+  lazy val kindProjector = "org.typelevel" %% "kind-projector" % "0.10.3"
+
   lazy val scalaTestPlusPlay = "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3"
 
   lazy val pegdown = "org.pegdown" % "pegdown" % "1.6.0"
