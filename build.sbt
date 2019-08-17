@@ -98,17 +98,12 @@ lazy val shared =
 
 lazy val emailService =
   (project in file("./email-service"))
-    .enablePlugins(SbtTwirl)
+    .enablePlugins(SbtTwirl, JavaAppPackaging)
     .settings(
       name := "email-service",
       version := "0.0.1",
-      libraryDependencies ++= Seq(akkaActor, akkaStream, typesafeConfig, sendgrid, scalaz, logback, scalaLogging),
-      assemblyJarName in assembly := s"${name.value}-${version.value}.jar",
-      assemblyMergeStrategy in assembly := {
-        case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
-        case classFilePath if classFilePath.endsWith("class") => MergeStrategy.first
-        case _ => MergeStrategy.concat
-      }
+      maintainer := "me@ruchij.com",
+      libraryDependencies ++= Seq(akkaActor, akkaStream, typesafeConfig, sendgrid, scalaz, logback, scalaLogging)
     )
     .dependsOn(shared)
 
